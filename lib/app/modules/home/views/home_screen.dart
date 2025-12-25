@@ -8,6 +8,7 @@ import '../widgets/nav_icon_item.dart';
 import '../widgets/service_item.dart';
 
 // Conditional import for File (only on non-web platforms)
+// ignore: unused_import
 import 'dart:io' if (dart.library.html) 'dart:html';
 
 class HomeScreen extends StatefulWidget {
