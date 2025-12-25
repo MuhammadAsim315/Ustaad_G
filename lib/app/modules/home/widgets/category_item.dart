@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class CategoryItem extends StatelessWidget {
   final String name;
@@ -20,7 +21,13 @@ class CategoryItem extends StatelessWidget {
       return Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {},
+          onTap: () {
+            Get.toNamed('/service-detail', arguments: {
+              'serviceName': name,
+              'serviceIcon': icon,
+              'serviceColor': color,
+            });
+          },
           borderRadius: BorderRadius.circular(16),
           child: Column(
             children: [
@@ -28,28 +35,21 @@ class CategoryItem extends StatelessWidget {
                 width: 85,
                 height: 85,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      color.withOpacity(0.15),
-                      color.withOpacity(0.08),
-                    ],
-                  ),
+                  color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(0.2),
-                      blurRadius: 8,
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 4,
                       spreadRadius: 0,
-                      offset: const Offset(0, 4),
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
                 child: Icon(
                   icon,
                   size: 42,
-                  color: color,
+                  color: const Color(0xFF4A5C7A), // Dark blue/purplish-blue
                 ),
               ),
               const SizedBox(height: 10),
@@ -72,36 +72,35 @@ class CategoryItem extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(40),
+        onTap: () {
+          Get.toNamed('/service-detail', arguments: {
+            'serviceName': name,
+            'serviceIcon': icon,
+            'serviceColor': color,
+          });
+        },
+        borderRadius: BorderRadius.circular(16),
         child: Column(
           children: [
             Container(
               width: 75,
               height: 75,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    color.withOpacity(0.15),
-                    color.withOpacity(0.08),
-                  ],
-                ),
-                shape: BoxShape.circle,
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: color.withOpacity(0.25),
-                    blurRadius: 12,
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 4,
                     spreadRadius: 0,
-                    offset: const Offset(0, 4),
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: Icon(
                 icon,
                 size: 38,
-                color: color,
+                color: const Color(0xFF4A5C7A), // Dark blue/purplish-blue
               ),
             ),
             const SizedBox(height: 10),

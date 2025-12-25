@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -97,12 +98,16 @@ class ProfileScreen extends StatelessWidget {
                     _buildMenuItem(
                       icon: Icons.person_outline,
                       title: 'Edit Profile',
-                      onTap: () {},
+                      onTap: () {
+                        Get.toNamed('/edit-profile');
+                      },
                     ),
                     _buildMenuItem(
                       icon: Icons.bookmark_outline,
                       title: 'My Bookings',
-                      onTap: () {},
+                      onTap: () {
+                        Get.toNamed('/my-bookings');
+                      },
                     ),
                     _buildMenuItem(
                       icon: Icons.payment_outlined,
@@ -112,17 +117,23 @@ class ProfileScreen extends StatelessWidget {
                     _buildMenuItem(
                       icon: Icons.notifications_outlined,
                       title: 'Notifications',
-                      onTap: () {},
+                      onTap: () {
+                        Get.toNamed('/notifications');
+                      },
                     ),
                     _buildMenuItem(
                       icon: Icons.help_outline,
                       title: 'Help & Support',
-                      onTap: () {},
+                      onTap: () {
+                        Get.toNamed('/help-support');
+                      },
                     ),
                     _buildMenuItem(
                       icon: Icons.settings_outlined,
                       title: 'Settings',
-                      onTap: () {},
+                      onTap: () {
+                        Get.toNamed('/settings');
+                      },
                     ),
                     const SizedBox(height: 20),
                     _buildMenuItem(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class ServiceItem extends StatelessWidget {
   final String name;
@@ -17,7 +18,13 @@ class ServiceItem extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          Get.toNamed('/service-detail', arguments: {
+            'serviceName': name,
+            'serviceIcon': icon,
+            'serviceColor': color,
+          });
+        },
         borderRadius: BorderRadius.circular(40),
         child: Column(
           children: [

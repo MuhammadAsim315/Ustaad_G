@@ -2,6 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'app/modules/home/views/onboarding_screen.dart';
 import 'app/modules/root/views/main_navigation_screen.dart';
+import 'app/modules/e_services/views/service_detail_screen.dart';
+import 'app/modules/bookings/views/booking_screen.dart';
+import 'app/modules/bookings/views/my_bookings_screen.dart';
+import 'app/modules/bookings/views/booking_success_screen.dart';
+import 'app/modules/checkout/views/checkout_screen.dart';
+import 'app/modules/profile/views/edit_profile_screen.dart';
+import 'app/modules/settings/views/settings_screen.dart';
+import 'app/modules/help_privacy/views/help_support_screen.dart';
+import 'app/modules/notifications/views/notifications_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,6 +46,22 @@ class MyApp extends StatelessWidget {
       getPages: [
         GetPage(name: '/', page: () => const OnboardingScreen()),
         GetPage(name: '/main', page: () => const MainNavigationScreen()),
+        GetPage(name: '/service-detail', page: () {
+          final args = Get.arguments as Map<String, dynamic>;
+          return ServiceDetailScreen(
+            serviceName: args['serviceName'],
+            serviceIcon: args['serviceIcon'],
+            serviceColor: args['serviceColor'] ?? Colors.blue,
+          );
+        }),
+        GetPage(name: '/booking', page: () => const BookingScreen()),
+        GetPage(name: '/checkout', page: () => const CheckoutScreen()),
+        GetPage(name: '/booking-success', page: () => const BookingSuccessScreen()),
+        GetPage(name: '/my-bookings', page: () => const MyBookingsScreen()),
+        GetPage(name: '/edit-profile', page: () => const EditProfileScreen()),
+        GetPage(name: '/settings', page: () => const SettingsScreen()),
+        GetPage(name: '/help-support', page: () => const HelpSupportScreen()),
+        GetPage(name: '/notifications', page: () => const NotificationsScreen()),
       ],
     );
   }
