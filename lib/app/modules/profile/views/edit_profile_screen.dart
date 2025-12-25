@@ -1,5 +1,10 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import '../controllers/profile_controller.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -9,9 +14,82 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final TextEditingController _nameController = TextEditingController(text: 'Jakob');
-  final TextEditingController _emailController = TextEditingController(text: 'jakob@example.com');
-  final TextEditingController _phoneController = TextEditingController(text: '+92 300 1234567');
+  late final ProfileController _profileController;
+  late final TextEditingController _nameController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
+  final ImagePicker _picker = ImagePicker();
+  File? _profileImage;
+  Uint8List? _profileImageBytes;
+  String? _profileImagePath;
+
+  @override
+  void initState() {
+    super.initState();
+    _profileController = Get.put(ProfileController());
+    _nameController = TextEditingController(text: _profileController.name.value);
+    _emailController = TextEditingController(text: _profileController.email.value);
+    _phoneController = TextEditingController(text: _profileController.phone.value);
+    _profileImage = _profileController.profileImage.value;
+    _profileImageBytes = _profileController.profileImageBytes.value;
+    _profileImagePath = _profileController.profileImagePath.value;
+  }
+
+  ImageProvider? _getImageProvider() {
+    if (kIsWeb) {
+      if (_profileImageBytes != null) {
+        return MemoryImage(_profileImageBytes!);
+      } else if (_profileController.profileImageBytes.value != null) {
+        return MemoryImage(_profileController.profileImageBytes.value!);
+      }
+    } else {
+      if (_profileImage != null) {
+        return FileImage(_profileImage!);
+      } else if (_profileController.profileImage.value != null) {
+        return FileImage(_profileController.profileImage.value!);
+      }
+    }
+    return null;
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 85,
+      );
+      
+      if (image != null) {
+        if (kIsWeb) {
+          // For web, read as bytes
+          final bytes = await image.readAsBytes();
+          setState(() {
+            _profileImageBytes = bytes;
+            _profileImagePath = image.path;
+            _profileImage = null;
+          });
+        } else {
+          // For mobile, use File
+          setState(() {
+            _profileImage = File(image.path);
+            _profileImageBytes = null;
+            _profileImagePath = image.path;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error picking image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -82,56 +160,78 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     // Profile picture
                     Stack(
                       children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFF4CAF50).withOpacity(0.2),
-                                const Color(0xFF66BB6A).withOpacity(0.1),
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF4CAF50).withOpacity(0.2),
+                                  const Color(0xFF66BB6A).withOpacity(0.1),
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF4CAF50).withOpacity(0.2),
+                                  blurRadius: 20,
+                                  spreadRadius: 0,
+                                  offset: const Offset(0, 8),
+                                ),
                               ],
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF4CAF50).withOpacity(0.2),
-                                blurRadius: 20,
-                                spreadRadius: 0,
-                                offset: const Offset(0, 8),
+                            child: Container(
+                              margin: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
                               ),
-                            ],
-                          ),
-                          child: Container(
-                            margin: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                            ),
-                            child: const Icon(
-                              Icons.person,
-                              size: 60,
-                              color: Color(0xFF4CAF50),
+                              child: ClipOval(
+                                child: _getImageProvider() != null
+                                    ? Image(
+                                        image: _getImageProvider()!,
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Icon(
+                                            Icons.person,
+                                            size: 60,
+                                            color: Color(0xFF4CAF50),
+                                          );
+                                        },
+                                      )
+                                    : const Icon(
+                                        Icons.person,
+                                        size: 60,
+                                        color: Color(0xFF4CAF50),
+                                      ),
+                              ),
                             ),
                           ),
                         ),
                         Positioned(
                           bottom: 0,
                           right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF4CAF50),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 3,
+                          child: GestureDetector(
+                            onTap: _pickImage,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF4CAF50),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 3,
+                                ),
                               ),
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 20,
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ),
@@ -167,6 +267,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       child: InkWell(
                         onTap: () {
                           // Save profile
+                          _profileController.updateProfile(
+                            newName: _nameController.text,
+                            newEmail: _emailController.text,
+                            newPhone: _phoneController.text,
+                            newImage: _profileImage,
+                            newImageBytes: _profileImageBytes,
+                            newImagePath: _profileImagePath,
+                          );
                           Get.back();
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(

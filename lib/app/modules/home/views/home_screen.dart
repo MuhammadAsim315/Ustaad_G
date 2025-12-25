@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import '../../root/controllers/navigation_controller.dart';
+import '../../profile/controllers/profile_controller.dart';
 import '../widgets/category_item.dart';
 import '../widgets/nav_icon_item.dart';
 import '../widgets/service_item.dart';
+
+// Conditional import for File (only on non-web platforms)
+import 'dart:io' if (dart.library.html) 'dart:html';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,6 +18,25 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Ensure ProfileController is initialized
+    Get.put(ProfileController());
+  }
+
+  ImageProvider? _getImageProvider(ProfileController controller) {
+    if (kIsWeb) {
+      if (controller.profileImageBytes.value != null) {
+        return MemoryImage(controller.profileImageBytes.value!);
+      }
+    } else {
+      if (controller.profileImage.value != null) {
+        return FileImage(controller.profileImage.value!);
+      }
+    }
+    return null;
+  }
 
   final List<Map<String, dynamic>> categories = [
     {'name': 'Plumber', 'icon': Icons.plumbing, 'color': Colors.blue},
@@ -51,44 +75,76 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               child: Row(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF4CAF50).withOpacity(0.2),
-                          const Color(0xFF66BB6A).withOpacity(0.1),
+                  Obx(() {
+                    final ProfileController profileController = Get.find<ProfileController>();
+                    final ImageProvider? imageProvider = _getImageProvider(profileController);
+                    
+                    return Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF4CAF50).withOpacity(0.2),
+                            const Color(0xFF66BB6A).withOpacity(0.1),
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
                         ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: 24,
-                      backgroundColor: Colors.white,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color(0xFF4CAF50).withOpacity(0.1),
-                              const Color(0xFF66BB6A).withOpacity(0.05),
-                            ],
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.person,
-                          color: Color(0xFF4CAF50),
-                          size: 20,
+                      child: CircleAvatar(
+                        radius: 24,
+                        backgroundColor: Colors.white,
+                        child: ClipOval(
+                          child: imageProvider != null
+                              ? Image(
+                                  image: imageProvider,
+                                  fit: BoxFit.cover,
+                                  width: 48,
+                                  height: 48,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            const Color(0xFF4CAF50).withOpacity(0.1),
+                                            const Color(0xFF66BB6A).withOpacity(0.05),
+                                          ],
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.person,
+                                        color: Color(0xFF4CAF50),
+                                        size: 20,
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        const Color(0xFF4CAF50).withOpacity(0.1),
+                                        const Color(0xFF66BB6A).withOpacity(0.05),
+                                      ],
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: Color(0xFF4CAF50),
+                                    size: 20,
+                                  ),
+                                ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  }),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,15 +157,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const Text(
-                        'Jakob',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
+                      Obx(() {
+                        final ProfileController profileController = Get.find<ProfileController>();
+                        return Text(
+                          profileController.name.value,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            letterSpacing: 0.3,
+                          ),
+                        );
+                      }),
                     ],
                   ),
                   const Spacer(),
@@ -127,7 +186,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: IconButton(
                       icon: Icon(Icons.notifications_outlined, color: Colors.black87),
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.toNamed('/notifications');
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -145,7 +206,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: IconButton(
                       icon: Icon(Icons.person_outline, color: Colors.black87),
-                      onPressed: () {},
+                      onPressed: () {
+                        // Navigate to profile tab
+                        Get.find<NavigationController>().changePage(3);
+                      },
                     ),
                   ),
                 ],
@@ -334,6 +398,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: Icons.article_outlined,
                     label: 'Newsfeed',
                     isSelected: false,
+                    route: '/newsfeed',
                   ),
                   NavIconItem(
                     icon: Icons.dashboard,
@@ -344,11 +409,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: Icons.build,
                     label: 'My Services',
                     isSelected: false,
+                    route: '/my-services',
                   ),
                   NavIconItem(
                     icon: Icons.attach_money,
                     label: 'Earnings',
                     isSelected: false,
+                    route: '/earnings',
                   ),
                 ],
               ),
@@ -456,7 +523,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: () {},
+                              onTap: () {
+                                // Navigate to categories tab
+                                Get.find<NavigationController>().changePage(1);
+                              },
                               borderRadius: BorderRadius.circular(8),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

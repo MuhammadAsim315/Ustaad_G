@@ -4,6 +4,7 @@ import '../../home/views/home_screen.dart';
 import '../../home/views/categories_screen.dart';
 import '../../search/views/search_screen.dart';
 import '../../profile/views/profile_screen.dart';
+import '../../profile/controllers/profile_controller.dart';
 import '../controllers/navigation_controller.dart';
 
 class MainNavigationScreen extends StatelessWidget {
@@ -12,6 +13,8 @@ class MainNavigationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final NavigationController controller = Get.put(NavigationController());
+    // Initialize ProfileController early so it's available throughout the app
+    Get.put(ProfileController());
 
     final List<Widget> screens = [
       const HomeScreen(),

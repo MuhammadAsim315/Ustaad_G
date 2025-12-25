@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class NavIconItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool isSelected;
+  final String? route;
 
   const NavIconItem({
     super.key,
     required this.icon,
     required this.label,
     this.isSelected = false,
+    this.route,
   });
 
   @override
@@ -17,7 +20,11 @@ class NavIconItem extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {},
+        onTap: route != null
+            ? () {
+                Get.toNamed(route!);
+              }
+            : null,
         borderRadius: BorderRadius.circular(14),
         child: Container(
           width: 85,

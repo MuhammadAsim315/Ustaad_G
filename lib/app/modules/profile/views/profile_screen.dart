@@ -1,11 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
+import '../controllers/profile_controller.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
+  ImageProvider? _getImageProvider(ProfileController controller) {
+    if (kIsWeb) {
+      if (controller.profileImageBytes.value != null) {
+        return MemoryImage(controller.profileImageBytes.value!);
+      }
+    } else {
+      if (controller.profileImage.value != null) {
+        return FileImage(controller.profileImage.value!);
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final ProfileController profileController = Get.put(ProfileController());
+    
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -33,7 +50,7 @@ class ProfileScreen extends StatelessWidget {
               // Profile section
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                child: Column(
+                child: Obx(() => Column(
                   children: [
                     // Avatar
                     Container(
@@ -62,17 +79,33 @@ class ProfileScreen extends StatelessWidget {
                           shape: BoxShape.circle,
                           color: Colors.white,
                         ),
-                        child: const Icon(
-                          Icons.person,
-                          size: 50,
-                          color: Color(0xFF4CAF50),
+                        child: ClipOval(
+                          child: _getImageProvider(profileController) != null
+                              ? Image(
+                                  image: _getImageProvider(profileController)!,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(
+                                      Icons.person,
+                                      size: 50,
+                                      color: Color(0xFF4CAF50),
+                                    );
+                                  },
+                                )
+                              : const Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color: Color(0xFF4CAF50),
+                                ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Jakob',
-                      style: TextStyle(
+                    Text(
+                      profileController.name.value,
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
@@ -80,14 +113,14 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'jakob@example.com',
+                      profileController.email.value,
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
                       ),
                     ),
                   ],
-                ),
+                )),
               ),
               
               // Menu items

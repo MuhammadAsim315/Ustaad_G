@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../widgets/category_item.dart';
+import '../../root/controllers/navigation_controller.dart';
 
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
@@ -32,7 +33,10 @@ class CategoriesScreen extends StatelessWidget {
                   Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => Get.back(),
+                      onTap: () {
+                        // Switch to home tab since categories is part of main navigation
+                        Get.find<NavigationController>().changePage(0);
+                      },
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         padding: const EdgeInsets.all(8),
@@ -78,7 +82,7 @@ class CategoriesScreen extends StatelessWidget {
                     crossAxisCount: 3,
                     crossAxisSpacing: 20,
                     mainAxisSpacing: 20,
-                    childAspectRatio: 0.9,
+                    childAspectRatio: 0.85,
                   ),
                   itemCount: CategoriesScreen.categories.length,
                   itemBuilder: (context, index) {

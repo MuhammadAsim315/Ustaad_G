@@ -11,6 +11,10 @@ import 'app/modules/profile/views/edit_profile_screen.dart';
 import 'app/modules/settings/views/settings_screen.dart';
 import 'app/modules/help_privacy/views/help_support_screen.dart';
 import 'app/modules/notifications/views/notifications_screen.dart';
+import 'app/modules/reviews/views/review_screen.dart';
+import 'app/modules/home/views/newsfeed_screen.dart';
+import 'app/modules/home/views/my_services_screen.dart';
+import 'app/modules/home/views/earnings_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -62,6 +66,10 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/settings', page: () => const SettingsScreen()),
         GetPage(name: '/help-support', page: () => const HelpSupportScreen()),
         GetPage(name: '/notifications', page: () => const NotificationsScreen()),
+        GetPage(name: '/review', page: () => const ReviewScreen()),
+        GetPage(name: '/newsfeed', page: () => const NewsfeedScreen()),
+        GetPage(name: '/my-services', page: () => const MyServicesScreen()),
+        GetPage(name: '/earnings', page: () => const EarningsScreen()),
       ],
     );
   }
