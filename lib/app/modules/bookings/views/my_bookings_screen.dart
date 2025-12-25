@@ -90,12 +90,19 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
                   color: const Color(0xFF4CAF50),
                   borderRadius: BorderRadius.circular(12),
                 ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                dividerColor: Colors.transparent,
                 labelColor: Colors.white,
                 unselectedLabelColor: Colors.grey[700],
                 labelStyle: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+                tabAlignment: TabAlignment.fill,
                 tabs: const [
                   Tab(text: 'Upcoming'),
                   Tab(text: 'Ongoing'),
