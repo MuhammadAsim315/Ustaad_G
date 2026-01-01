@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../utils/icon_helper.dart';
 import 'booking_detail_screen.dart';
 
 class MyBookingsScreen extends StatefulWidget {
@@ -274,11 +276,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
                         color: Colors.grey[200],
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        booking['icon'],
-                        color: const Color(0xFF4A5C7A),
-                        size: 30,
-                      ),
+                      child: _buildServiceIcon(booking['serviceName'] as String),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -422,7 +420,6 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
         'address': '123 Main Street, Lahore',
         'amount': 2200,
         'status': 'upcoming',
-        'icon': Icons.plumbing,
       },
       {
         'id': '2',
@@ -433,7 +430,6 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
         'address': '456 Business Park, Karachi',
         'amount': 3000,
         'status': 'ongoing',
-        'icon': Icons.electrical_services,
       },
       {
         'id': '3',
@@ -444,7 +440,6 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
         'address': '789 Residential Area, Islamabad',
         'amount': 2500,
         'status': 'completed',
-        'icon': Icons.carpenter,
       },
     ];
 
@@ -455,6 +450,28 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
     } else {
       return allBookings.where((b) => b['status'] == 'completed').toList();
     }
+  }
+
+  Widget _buildServiceIcon(String serviceName) {
+    final svgPath = IconHelper.getSvgIconPath(serviceName);
+    
+    if (svgPath != null) {
+      return Padding(
+        padding: const EdgeInsets.all(10),
+        child: SvgPicture.asset(
+          svgPath,
+          width: 40,
+          height: 40,
+          fit: BoxFit.contain,
+        ),
+      );
+    }
+    
+    return Icon(
+      Icons.category,
+      color: const Color(0xFF4A5C7A),
+      size: 30,
+    );
   }
 }
 

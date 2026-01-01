@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../utils/icon_helper.dart';
 
 class MyServicesScreen extends StatelessWidget {
   const MyServicesScreen({super.key});
@@ -9,21 +11,18 @@ class MyServicesScreen extends StatelessWidget {
     final List<Map<String, dynamic>> myServices = [
       {
         'name': 'Plumber',
-        'icon': Icons.plumbing,
         'status': 'Active',
         'bookings': 12,
         'rating': 4.8,
       },
       {
         'name': 'Electrician',
-        'icon': Icons.electrical_services,
         'status': 'Active',
         'bookings': 8,
         'rating': 4.9,
       },
       {
         'name': 'Carpenter',
-        'icon': Icons.carpenter,
         'status': 'Inactive',
         'bookings': 5,
         'rating': 4.7,
@@ -129,6 +128,8 @@ class MyServicesScreen extends StatelessWidget {
 
   Widget _buildServiceCard(Map<String, dynamic> service) {
     final bool isActive = service['status'] == 'Active';
+    final serviceName = service['name'] as String;
+    final svgPath = IconHelper.getSvgIconPath(serviceName);
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -157,11 +158,21 @@ class MyServicesScreen extends StatelessWidget {
               color: Colors.grey[200],
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(
-              service['icon'],
-              color: const Color(0xFF4A5C7A),
-              size: 35,
-            ),
+            child: svgPath != null
+                ? Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: SvgPicture.asset(
+                      svgPath,
+                      width: 46,
+                      height: 46,
+                      fit: BoxFit.contain,
+                    ),
+                  )
+                : Icon(
+                    Icons.category,
+                    color: const Color(0xFF4A5C7A),
+                    size: 35,
+                  ),
           ),
           const SizedBox(width: 16),
           Expanded(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../utils/icon_helper.dart';
 
 class BookingDetailScreen extends StatelessWidget {
   final Map<String, dynamic> booking;
@@ -172,11 +174,7 @@ class BookingDetailScreen extends StatelessWidget {
                                   color: Colors.grey[200],
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: Icon(
-                                  booking['icon'],
-                                  color: const Color(0xFF4A5C7A),
-                                  size: 30,
-                                ),
+                                child: _buildServiceIcon(booking['serviceName'] as String),
                               ),
                               const SizedBox(width: 16),
                               Expanded(
@@ -421,6 +419,28 @@ class BookingDetailScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildServiceIcon(String serviceName) {
+    final svgPath = IconHelper.getSvgIconPath(serviceName);
+    
+    if (svgPath != null) {
+      return Padding(
+        padding: const EdgeInsets.all(10),
+        child: SvgPicture.asset(
+          svgPath,
+          width: 40,
+          height: 40,
+          fit: BoxFit.contain,
+        ),
+      );
+    }
+    
+    return Icon(
+      Icons.category,
+      color: const Color(0xFF4A5C7A),
+      size: 30,
     );
   }
 }
