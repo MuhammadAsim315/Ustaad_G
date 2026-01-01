@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
           final args = Get.arguments as Map<String, dynamic>;
           return ServiceDetailScreen(
             serviceName: args['serviceName'],
-            serviceIcon: args['serviceIcon'],
+            serviceSvgPath: args['serviceSvgPath'],
             serviceColor: args['serviceColor'] ?? Colors.blue,
           );
         }),

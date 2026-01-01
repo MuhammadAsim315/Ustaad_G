@@ -39,10 +39,13 @@ dependencies:
   get: ^4.6.6
   
   # Date formatting
-  intl: ^0.19.0
+  intl: ^0.20.2
   
   # Image picker for profile pictures
   image_picker: ^1.0.7
+  
+  # SVG support for custom icons
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../utils/responsive_helper.dart';
+import '../../../utils/icon_helper.dart';
 
 class CategoryItem extends StatelessWidget {
   final String name;
-  final IconData icon;
   final Color color;
   final bool isGrid;
 
   const CategoryItem({
     super.key,
     required this.name,
-    required this.icon,
     required this.color,
     this.isGrid = false,
   });
@@ -25,6 +25,37 @@ class CategoryItem extends StatelessWidget {
   Color _getBorderColor() {
     return color.withValues(alpha: 0.15);
   }
+  
+  // Get SVG path from icon helper
+  String? _getSvgPath() {
+    return IconHelper.getSvgIconPath(name);
+  }
+  
+  // Build SVG icon widget with proper sizing
+  Widget _buildSvgIcon(double size) {
+    final svgPath = _getSvgPath();
+    
+    if (svgPath != null) {
+      return SvgPicture.asset(
+        svgPath,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        placeholderBuilder: (BuildContext context) => Icon(
+          Icons.category,
+          size: size,
+          color: color,
+        ),
+      );
+    }
+    
+    // Fallback to a default icon if SVG not found
+    return Icon(
+      Icons.category,
+      size: size,
+      color: color,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +66,7 @@ class CategoryItem extends StatelessWidget {
           onTap: () {
             Get.toNamed('/service-detail', arguments: {
               'serviceName': name,
-              'serviceIcon': icon,
+              'serviceSvgPath': _getSvgPath(),
               'serviceColor': color,
             });
           },
@@ -65,16 +96,9 @@ class CategoryItem extends StatelessWidget {
                 children: [
                   Expanded(
                     flex: 3,
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        icon,
-                        size: ResponsiveHelper.responsiveIconSize(context, mobile: 28, tablet: 32, desktop: 36),
-                        color: color,
+                    child: Center(
+                      child: _buildSvgIcon(
+                        ResponsiveHelper.responsiveIconSize(context, mobile: 48, tablet: 56, desktop: 64),
                       ),
                     ),
                   ),
@@ -112,7 +136,7 @@ class CategoryItem extends StatelessWidget {
         onTap: () {
           Get.toNamed('/service-detail', arguments: {
             'serviceName': name,
-            'serviceIcon': icon,
+            'serviceSvgPath': _getSvgPath(),
             'serviceColor': color,
           });
         },
@@ -138,18 +162,8 @@ class CategoryItem extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: ResponsiveHelper.responsiveIconSize(context, mobile: 60, tablet: 70, desktop: 80),
-                height: ResponsiveHelper.responsiveIconSize(context, mobile: 60, tablet: 70, desktop: 80),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: ResponsiveHelper.responsiveIconSize(context, mobile: 28, tablet: 32, desktop: 36),
-                  color: color,
-                ),
+              _buildSvgIcon(
+                ResponsiveHelper.responsiveIconSize(context, mobile: 56, tablet: 64, desktop: 72),
               ),
               SizedBox(height: ResponsiveHelper.responsiveSpacing(context, mobile: 10, tablet: 12, desktop: 14)),
               Text(

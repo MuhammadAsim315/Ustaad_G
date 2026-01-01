@@ -8,15 +8,15 @@ class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
 
   static final List<Map<String, dynamic>> categories = [
-    {'name': 'Plumber', 'icon': Icons.plumbing, 'color': Colors.blue as Color},
-    {'name': 'Carpenter', 'icon': Icons.carpenter, 'color': Colors.brown as Color},
-    {'name': 'Welder', 'icon': Icons.build, 'color': Colors.orange as Color},
-    {'name': 'Contractor', 'icon': Icons.construction, 'color': Colors.grey as Color},
-    {'name': 'Electrician', 'icon': Icons.electrical_services, 'color': Colors.yellow[700]!},
-    {'name': 'Painter', 'icon': Icons.format_paint, 'color': Colors.purple as Color},
-    {'name': 'Laundry', 'icon': Icons.local_laundry_service, 'color': Colors.cyan as Color},
-    {'name': 'Mechanic', 'icon': Icons.car_repair, 'color': Colors.red as Color},
-    {'name': 'Cleaner', 'icon': Icons.cleaning_services, 'color': Colors.teal as Color},
+    {'name': 'Plumber', 'color': Colors.blue as Color},
+    {'name': 'Carpenter', 'color': Colors.brown as Color},
+    {'name': 'Welder', 'color': Colors.orange as Color},
+    {'name': 'Contractor', 'color': Colors.grey as Color},
+    {'name': 'Electrician', 'color': Colors.yellow[700]!},
+    {'name': 'Painter', 'color': Colors.purple as Color},
+    {'name': 'Laundry', 'color': Colors.cyan as Color},
+    {'name': 'Mechanic', 'color': Colors.red as Color},
+    {'name': 'Cleaner', 'color': Colors.teal as Color},
   ];
 
   @override
@@ -156,7 +156,6 @@ class CategoriesScreen extends StatelessWidget {
                           final category = CategoriesScreen.categories[index];
                           return CategoryItem(
                             name: category['name'] as String,
-                            icon: category['icon'] as IconData,
                             color: category['color'] as Color,
                             isGrid: true,
                           );

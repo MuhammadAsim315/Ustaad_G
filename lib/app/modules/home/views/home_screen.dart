@@ -41,17 +41,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   final List<Map<String, dynamic>> categories = [
-    {'name': 'Plumber', 'icon': Icons.plumbing, 'color': Colors.blue},
-    {'name': 'Carpenter', 'icon': Icons.carpenter, 'color': Colors.brown},
-    {'name': 'Welder', 'icon': Icons.build, 'color': Colors.orange},
-    {'name': 'Electrician', 'icon': Icons.electrical_services, 'color': Colors.yellow[700]!},
+    {'name': 'Plumber', 'color': Colors.blue},
+    {'name': 'Carpenter', 'color': Colors.brown},
+    {'name': 'Welder', 'color': Colors.orange},
+    {'name': 'Electrician', 'color': Colors.yellow[700]!},
   ];
 
   final List<Map<String, dynamic>> services = [
-    {'name': 'Plumber', 'icon': Icons.plumbing, 'color': Colors.blue},
-    {'name': 'Carpenter', 'icon': Icons.carpenter, 'color': Colors.brown},
-    {'name': 'Welder', 'icon': Icons.build, 'color': Colors.orange},
-    {'name': 'Electrician', 'icon': Icons.electrical_services, 'color': Colors.yellow[700]!},
+    {'name': 'Plumber', 'color': Colors.blue},
+    {'name': 'Carpenter', 'color': Colors.brown},
+    {'name': 'Welder', 'color': Colors.orange},
+    {'name': 'Electrician', 'color': Colors.yellow[700]!},
   ];
 
   String _getGreeting() {
@@ -557,7 +557,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 width: ResponsiveHelper.isMobile(context) ? null : itemWidth,
                                 child: CategoryItem(
                                   name: category['name'] as String,
-                                  icon: category['icon'] as IconData,
                                   color: category['color'] as Color,
                                 ),
                               );
@@ -640,7 +639,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 width: ResponsiveHelper.isMobile(context) ? null : itemWidth,
                                 child: ServiceItem(
                                   name: service['name'] as String,
-                                  icon: service['icon'] as IconData,
                                   color: service['color'] as Color,
                                 ),
                               );

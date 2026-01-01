@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../utils/icon_helper.dart';
 
 class ServiceDetailScreen extends StatelessWidget {
   final String serviceName;
-  final IconData serviceIcon;
+  final String? serviceSvgPath;
   final Color serviceColor;
 
   const ServiceDetailScreen({
     super.key,
     required this.serviceName,
-    required this.serviceIcon,
+    this.serviceSvgPath,
     required this.serviceColor,
   });
 
@@ -75,26 +77,7 @@ class ServiceDetailScreen extends StatelessWidget {
                   children: [
                     // Service icon display
                     Center(
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withValues(alpha: 0.1),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          serviceIcon,
-                          size: 60,
-                          color: const Color(0xFF4A5C7A),
-                        ),
-                      ),
+                      child: _buildServiceIcon(),
                     ),
                     const SizedBox(height: 30),
 
@@ -235,7 +218,7 @@ class ServiceDetailScreen extends StatelessWidget {
                   onTap: () {
                     Get.toNamed('/booking', arguments: {
                       'serviceName': serviceName,
-                      'serviceIcon': serviceIcon,
+                      'serviceSvgPath': serviceSvgPath ?? IconHelper.getSvgIconPath(serviceName),
                     });
                   },
                   borderRadius: BorderRadius.circular(16),
@@ -272,6 +255,32 @@ class ServiceDetailScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  // Build service icon (SVG or fallback)
+  Widget _buildServiceIcon() {
+    final svgPath = serviceSvgPath ?? IconHelper.getSvgIconPath(serviceName);
+    
+    if (svgPath != null) {
+      return SvgPicture.asset(
+        svgPath,
+        width: 120,
+        height: 120,
+        fit: BoxFit.contain,
+        placeholderBuilder: (BuildContext context) => Icon(
+          Icons.category,
+          size: 100,
+          color: serviceColor,
+        ),
+      );
+    }
+    
+    // Fallback to default icon
+    return Icon(
+      Icons.category,
+      size: 100,
+      color: serviceColor,
     );
   }
 
