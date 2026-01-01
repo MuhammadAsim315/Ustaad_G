@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../controllers/profile_controller.dart';
+import '../../../utils/preferences_helper.dart';
+import '../../auth/views/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -225,7 +228,49 @@ class ProfileScreen extends StatelessWidget {
                     _buildMenuItem(
                       icon: Icons.logout,
                       title: 'Logout',
-                      onTap: () {},
+                      onTap: () async {
+                        // Show confirmation dialog
+                        final shouldLogout = await Get.dialog<bool>(
+                          AlertDialog(
+                            title: const Text('Logout'),
+                            content: const Text('Are you sure you want to logout?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Get.back(result: false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Get.back(result: true),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.red,
+                                ),
+                                child: const Text('Logout'),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (shouldLogout == true) {
+                          try {
+                            // Sign out from Firebase
+                            await FirebaseAuth.instance.signOut();
+                            
+                            // Clear login/guest status but keep onboarding seen
+                            await PreferencesHelper.logout();
+                            
+                            // Navigate to login screen
+                            Get.offAll(() => const LoginScreen());
+                          } catch (e) {
+                            Get.snackbar(
+                              'Error',
+                              'Failed to logout. Please try again.',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
+                          }
+                        }
+                      },
                       isDestructive: true,
                     ),
                   ],

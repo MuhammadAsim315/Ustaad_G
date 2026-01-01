@@ -46,6 +46,14 @@ dependencies:
   
   # SVG support for custom icons
   flutter_svg: ^2.0.10+1
+  
+  # Shared preferences for persistent storage
+  shared_preferences: ^2.2.2
+  
+  # Firebase
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.3
 
 dev_dependencies:
   flutter_test:

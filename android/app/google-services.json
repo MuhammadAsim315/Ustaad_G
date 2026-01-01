@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1012022062024",
+    "firebase_url": "https://ustaadg-d0a71-default-rtdb.firebaseio.com",
+    "project_id": "ustaadg-d0a71",
+    "storage_bucket": "ustaadg-d0a71.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1012022062024:android:14e7280f97f84916e46efd",
+        "android_client_info": {
+          "package_name": "com.example.ustaadg"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0ua3W6aP-2EB97Cdo0XIM6vbFQip18Ko"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'app/modules/home/views/onboarding_screen.dart';
 import 'app/modules/root/views/main_navigation_screen.dart';
 import 'app/modules/e_services/views/service_detail_screen.dart';
@@ -15,8 +17,18 @@ import 'app/modules/reviews/views/review_screen.dart';
 import 'app/modules/home/views/newsfeed_screen.dart';
 import 'app/modules/home/views/my_services_screen.dart';
 import 'app/modules/home/views/earnings_screen.dart';
+import 'app/modules/auth/views/login_screen.dart';
+import 'app/modules/auth/views/signup_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint('Firebase initialization error: $e');
+  }
   runApp(const MyApp());
 }
 
@@ -46,9 +58,11 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.white,
         ),
       ),
-      initialRoute: '/',
+      initialRoute: '/login',
       getPages: [
-        GetPage(name: '/', page: () => const OnboardingScreen()),
+        GetPage(name: '/onboarding', page: () => const OnboardingScreen()),
+        GetPage(name: '/login', page: () => const LoginScreen()),
+        GetPage(name: '/signup', page: () => const SignupScreen()),
         GetPage(name: '/main', page: () => const MainNavigationScreen()),
         GetPage(name: '/service-detail', page: () {
           final args = Get.arguments as Map<String, dynamic>;

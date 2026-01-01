@@ -27,8 +27,8 @@ class NavIconItem extends StatelessWidget {
             : null,
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          width: 85,
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+          width: 75,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
           decoration: BoxDecoration(
             gradient: isSelected
                 ? const LinearGradient(
@@ -70,7 +70,7 @@ class NavIconItem extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha:isSelected ? 0.3 : 0.5),
                   shape: BoxShape.circle,
@@ -78,19 +78,21 @@ class NavIconItem extends StatelessWidget {
                 child: Icon(
                   icon,
                   color: isSelected ? Colors.white : Colors.grey[700],
-                  size: 20,
+                  size: 18,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                   color: isSelected ? Colors.white : Colors.grey[700],
-                  letterSpacing: 0.3,
+                  letterSpacing: 0.2,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

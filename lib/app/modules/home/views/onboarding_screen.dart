@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../utils/preferences_helper.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -148,8 +149,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () {
-                    Get.offNamed('/main');
+                  onTap: () async {
+                    // Mark onboarding as seen
+                    await PreferencesHelper.setOnboardingSeen(true);
+                    Get.offNamed('/login');
                   },
                   borderRadius: BorderRadius.circular(35),
                   child: Container(
