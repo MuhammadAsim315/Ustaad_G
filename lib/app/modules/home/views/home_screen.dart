@@ -6,6 +6,7 @@ import '../../profile/controllers/profile_controller.dart';
 import '../widgets/category_item.dart';
 import '../widgets/nav_icon_item.dart';
 import '../widgets/service_item.dart';
+import '../../../utils/responsive_helper.dart';
 
 // Conditional import for File (only on non-web platforms)
 // ignore: unused_import
@@ -66,15 +67,43 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = ResponsiveHelper.isMobile(context);
+    final isTablet = ResponsiveHelper.isTablet(context);
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final horizontalPadding = ResponsiveHelper.horizontalPadding(context);
+    
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Enhanced top bar with profile
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              child: Row(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Center content on larger screens
+            if (isDesktop) {
+              return Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: ResponsiveHelper.maxContentWidth(context)),
+                  child: _buildContent(context, horizontalPadding, isMobile, isTablet, isDesktop),
+                ),
+              );
+            }
+            return _buildContent(context, horizontalPadding, isMobile, isTablet, isDesktop);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, double horizontalPadding, bool isMobile, bool isTablet, bool isDesktop) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+        // Enhanced top bar with profile
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+            vertical: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20),
+          ),
+          child: Row(
                 children: [
                   Obx(() {
                     final ProfileController profileController = Get.find<ProfileController>();
@@ -85,43 +114,43 @@ class _HomeScreenState extends State<HomeScreen> {
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF4CAF50).withOpacity(0.2),
-                            const Color(0xFF66BB6A).withOpacity(0.1),
+                            const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                            const Color(0xFF66BB6A).withValues(alpha: 0.1),
                           ],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
+                            color: Colors.grey.withValues(alpha: 0.1),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
                       child: CircleAvatar(
-                        radius: 24,
+                        radius: ResponsiveHelper.responsiveIconSize(context, mobile: 20, tablet: 22, desktop: 24) / 2,
                         backgroundColor: Colors.white,
                         child: ClipOval(
                           child: imageProvider != null
                               ? Image(
                                   image: imageProvider,
                                   fit: BoxFit.cover,
-                                  width: 48,
-                                  height: 48,
+                                  width: ResponsiveHelper.responsiveIconSize(context, mobile: 40, tablet: 44, desktop: 48),
+                                  height: ResponsiveHelper.responsiveIconSize(context, mobile: 40, tablet: 44, desktop: 48),
                                   errorBuilder: (context, error, stackTrace) {
                                     return Container(
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         gradient: LinearGradient(
                                           colors: [
-                                            const Color(0xFF4CAF50).withOpacity(0.1),
-                                            const Color(0xFF66BB6A).withOpacity(0.05),
+                                            const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                                            const Color(0xFF66BB6A).withValues(alpha: 0.05),
                                           ],
                                         ),
                                       ),
                                       child: const Icon(
                                         Icons.person,
                                         color: Color(0xFF4CAF50),
-                                        size: 20,
+                                        size: 16,
                                       ),
                                     );
                                   },
@@ -131,15 +160,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                     shape: BoxShape.circle,
                                     gradient: LinearGradient(
                                       colors: [
-                                        const Color(0xFF4CAF50).withOpacity(0.1),
-                                        const Color(0xFF66BB6A).withOpacity(0.05),
+                                        const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                                        const Color(0xFF66BB6A).withValues(alpha: 0.05),
                                       ],
                                     ),
                                   ),
                                   child: const Icon(
                                     Icons.person,
                                     color: Color(0xFF4CAF50),
-                                    size: 20,
+                                    size: 16,
                                   ),
                                 ),
                         ),
@@ -153,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         _getGreeting(),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: ResponsiveHelper.responsiveFontSize(context, mobile: 12, tablet: 13, desktop: 14),
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -162,8 +191,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         final ProfileController profileController = Get.find<ProfileController>();
                         return Text(
                           profileController.name.value,
-                          style: const TextStyle(
-                            fontSize: 18,
+                          style: TextStyle(
+                            fontSize: ResponsiveHelper.responsiveFontSize(context, mobile: 18, tablet: 20, desktop: 22),
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                             letterSpacing: 0.3,
@@ -179,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
+                          color: Colors.grey.withValues(alpha: 0.1),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -199,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
+                          color: Colors.grey.withValues(alpha: 0.1),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -219,15 +248,18 @@ class _HomeScreenState extends State<HomeScreen> {
             
             // Enhanced search bar
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: ResponsiveHelper.responsiveSpacing(context, mobile: 10, tablet: 12, desktop: 15),
+              ),
               child: Container(
-                height: 56,
+                height: ResponsiveHelper.isMobile(context) ? 56 : 60,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withValues(alpha: 0.1),
                       blurRadius: 10,
                       spreadRadius: 0,
                       offset: const Offset(0, 4),
@@ -249,13 +281,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       margin: const EdgeInsets.all(12),
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4CAF50).withOpacity(0.1),
+                        color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
                         Icons.search,
                         color: Color(0xFF4CAF50),
-                        size: 20,
+                        size: 16,
                       ),
                     ),
                     border: InputBorder.none,
@@ -267,9 +299,12 @@ class _HomeScreenState extends State<HomeScreen> {
             
             // Enhanced banner with gradient
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: ResponsiveHelper.responsiveSpacing(context, mobile: 10, tablet: 12, desktop: 15),
+              ),
               child: Container(
-                height: 160,
+                height: ResponsiveHelper.isMobile(context) ? 160 : ResponsiveHelper.isTablet(context) ? 180 : 200,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
@@ -279,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF4CAF50).withOpacity(0.3),
+                      color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
                       blurRadius: 20,
                       spreadRadius: 0,
                       offset: const Offset(0, 8),
@@ -297,7 +332,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: 120,
                         height: 120,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -309,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.08),
+                          color: Colors.white.withValues(alpha: 0.08),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -345,7 +380,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Text(
@@ -367,11 +402,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: 110,
                         height: 110,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.25),
+                          color: Colors.white.withValues(alpha: 0.25),
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -379,7 +414,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         child: const Icon(
                           Icons.build_circle,
-                          size: 70,
+                          size: 50,
                           color: Colors.white,
                         ),
                       ),
@@ -391,65 +426,76 @@ class _HomeScreenState extends State<HomeScreen> {
             
             // Navigation icons
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  NavIconItem(
-                    icon: Icons.article_outlined,
-                    label: 'Newsfeed',
-                    isSelected: false,
-                    route: '/newsfeed',
-                  ),
-                  NavIconItem(
-                    icon: Icons.dashboard,
-                    label: 'Dashboard',
-                    isSelected: true,
-                  ),
-                  NavIconItem(
-                    icon: Icons.build,
-                    label: 'My Services',
-                    isSelected: false,
-                    route: '/my-services',
-                  ),
-                  NavIconItem(
-                    icon: Icons.attach_money,
-                    label: 'Earnings',
-                    isSelected: false,
-                    route: '/earnings',
-                  ),
-                ],
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20),
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Wrap(
+                    alignment: WrapAlignment.spaceEvenly,
+                    spacing: ResponsiveHelper.responsiveSpacing(context, mobile: 8, tablet: 16, desktop: 24),
+                    runSpacing: ResponsiveHelper.responsiveSpacing(context, mobile: 8, tablet: 12, desktop: 16),
+                    children: [
+                      NavIconItem(
+                        icon: Icons.article_outlined,
+                        label: 'Newsfeed',
+                        isSelected: false,
+                        route: '/newsfeed',
+                      ),
+                      NavIconItem(
+                        icon: Icons.dashboard,
+                        label: 'Dashboard',
+                        isSelected: true,
+                      ),
+                      NavIconItem(
+                        icon: Icons.build,
+                        label: 'My Services',
+                        isSelected: false,
+                        route: '/my-services',
+                      ),
+                      NavIconItem(
+                        icon: Icons.attach_money,
+                        label: 'Earnings',
+                        isSelected: false,
+                        route: '/earnings',
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
             
             // Categories section
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                        vertical: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Categories',
                                 style: TextStyle(
-                                  fontSize: 22,
+                                  fontSize: ResponsiveHelper.responsiveFontSize(context, mobile: 22, tablet: 24, desktop: 26),
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black87,
                                   letterSpacing: 0.3,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: ResponsiveHelper.responsiveSpacing(context, mobile: 4, tablet: 6, desktop: 8)),
                               Text(
                                 'All categories of services',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: ResponsiveHelper.responsiveFontSize(context, mobile: 13, tablet: 14, desktop: 15),
                                   color: Colors.grey[600],
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -493,29 +539,47 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: categories.take(4).map((category) {
-                          return CategoryItem(
-                            name: category['name'],
-                            icon: category['icon'],
-                            color: category['color'],
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                        vertical: ResponsiveHelper.responsiveSpacing(context, mobile: 10, tablet: 12, desktop: 15),
+                      ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final itemsPerRow = ResponsiveHelper.itemsPerRow(context, mobile: 4, tablet: 4, desktop: 4);
+                          final itemWidth = (constraints.maxWidth - (horizontalPadding * 2) - (ResponsiveHelper.responsiveSpacing(context, mobile: 8, tablet: 12, desktop: 16) * (itemsPerRow - 1))) / itemsPerRow;
+                          
+                          return Wrap(
+                            alignment: WrapAlignment.spaceEvenly,
+                            spacing: ResponsiveHelper.responsiveSpacing(context, mobile: 8, tablet: 12, desktop: 16),
+                            runSpacing: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20),
+                            children: categories.take(4).map((category) {
+                              return SizedBox(
+                                width: ResponsiveHelper.isMobile(context) ? null : itemWidth,
+                                child: CategoryItem(
+                                  name: category['name'] as String,
+                                  icon: category['icon'] as IconData,
+                                  color: category['color'] as Color,
+                                ),
+                              );
+                            }).toList(),
                           );
-                        }).toList(),
+                        },
                       ),
                     ),
                     
                     // Services you may need section
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                        vertical: ResponsiveHelper.responsiveSpacing(context, mobile: 20, tablet: 24, desktop: 28),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'Services you may need',
                             style: TextStyle(
-                              fontSize: 22,
+                              fontSize: ResponsiveHelper.responsiveFontSize(context, mobile: 22, tablet: 24, desktop: 26),
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
                               letterSpacing: 0.3,
@@ -558,26 +622,38 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: services.take(4).map((service) {
-                          return ServiceItem(
-                            name: service['name'],
-                            icon: service['icon'],
-                            color: service['color'],
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                        vertical: ResponsiveHelper.responsiveSpacing(context, mobile: 10, tablet: 12, desktop: 15),
+                      ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final itemsPerRow = ResponsiveHelper.itemsPerRow(context, mobile: 4, tablet: 4, desktop: 4);
+                          final itemWidth = (constraints.maxWidth - (horizontalPadding * 2) - (ResponsiveHelper.responsiveSpacing(context, mobile: 8, tablet: 12, desktop: 16) * (itemsPerRow - 1))) / itemsPerRow;
+                          
+                          return Wrap(
+                            alignment: WrapAlignment.spaceEvenly,
+                            spacing: ResponsiveHelper.responsiveSpacing(context, mobile: 8, tablet: 12, desktop: 16),
+                            runSpacing: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20),
+                            children: services.take(4).map((service) {
+                              return SizedBox(
+                                width: ResponsiveHelper.isMobile(context) ? null : itemWidth,
+                                child: ServiceItem(
+                                  name: service['name'] as String,
+                                  icon: service['icon'] as IconData,
+                                  color: service['color'] as Color,
+                                ),
+                              );
+                            }).toList(),
                           );
-                        }).toList(),
+                        },
                       ),
                     ),
                     
-                    const SizedBox(height: 20),
+                    SizedBox(height: ResponsiveHelper.responsiveSpacing(context, mobile: 20, tablet: 24, desktop: 28)),
                   ],
                 ),
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

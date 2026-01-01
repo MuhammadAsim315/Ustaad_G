@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../utils/responsive_helper.dart';
 
 class CategoryItem extends StatelessWidget {
   final String name;
@@ -15,6 +16,16 @@ class CategoryItem extends StatelessWidget {
     this.isGrid = false,
   });
 
+  // Professional background color (subtle, not cartoony)
+  Color _getBackgroundColor() {
+    return Colors.white;
+  }
+  
+  // Professional border color
+  Color _getBorderColor() {
+    return color.withValues(alpha: 0.15);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isGrid) {
@@ -28,57 +39,67 @@ class CategoryItem extends StatelessWidget {
               'serviceColor': color,
             });
           },
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          blurRadius: 4,
-                          spreadRadius: 0,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      icon,
-                      size: 45,
-                      color: const Color(0xFF4A5C7A), // Dark blue/purplish-blue
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Expanded(
-                  flex: 1,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                        letterSpacing: 0.2,
-                        height: 1.1,
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            decoration: BoxDecoration(
+              color: _getBackgroundColor(),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _getBorderColor(),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 8,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 2),
                 ),
               ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 14, desktop: 16)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        icon,
+                        size: ResponsiveHelper.responsiveIconSize(context, mobile: 28, tablet: 32, desktop: 36),
+                        color: color,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: ResponsiveHelper.responsiveSpacing(context, mobile: 8, tablet: 10, desktop: 12)),
+                  Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.responsiveSpacing(context, mobile: 4, tablet: 6, desktop: 8)),
+                      child: Text(
+                        name,
+                        style: TextStyle(
+                          fontSize: ResponsiveHelper.responsiveFontSize(context, mobile: 11, tablet: 12, desktop: 13),
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[900],
+                          letterSpacing: 0,
+                          height: 1.3,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -95,42 +116,54 @@ class CategoryItem extends StatelessWidget {
             'serviceColor': color,
           });
         },
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          children: [
-            Container(
-              width: 75,
-              height: 75,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    blurRadius: 4,
-                    spreadRadius: 0,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Icon(
-                icon,
-                size: 38,
-                color: const Color(0xFF4A5C7A), // Dark blue/purplish-blue
-              ),
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: EdgeInsets.all(ResponsiveHelper.responsiveSpacing(context, mobile: 10, tablet: 12, desktop: 14)),
+          decoration: BoxDecoration(
+            color: _getBackgroundColor(),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: _getBorderColor(),
+              width: 1.5,
             ),
-            const SizedBox(height: 10),
-            Text(
-              name,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-                letterSpacing: 0.2,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 8,
+                spreadRadius: 0,
+                offset: const Offset(0, 2),
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: ResponsiveHelper.responsiveIconSize(context, mobile: 60, tablet: 70, desktop: 80),
+                height: ResponsiveHelper.responsiveIconSize(context, mobile: 60, tablet: 70, desktop: 80),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  size: ResponsiveHelper.responsiveIconSize(context, mobile: 28, tablet: 32, desktop: 36),
+                  color: color,
+                ),
+              ),
+              SizedBox(height: ResponsiveHelper.responsiveSpacing(context, mobile: 10, tablet: 12, desktop: 14)),
+              Text(
+                name,
+                style: TextStyle(
+                  fontSize: ResponsiveHelper.responsiveFontSize(context, mobile: 12, tablet: 13, desktop: 14),
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[900],
+                  letterSpacing: 0,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

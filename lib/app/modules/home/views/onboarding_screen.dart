@@ -9,7 +9,7 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  int _currentPage = 0;
+  final int _currentPage = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -33,14 +33,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            const Color(0xFF4CAF50).withOpacity(0.1),
-                            const Color(0xFF4CAF50).withOpacity(0.05),
+                            const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                            const Color(0xFF4CAF50).withValues(alpha: 0.05),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF4CAF50).withOpacity(0.2),
+                            color: const Color(
+                              0xFF4CAF50,
+                            ).withValues(alpha: 0.2),
                             blurRadius: 30,
                             spreadRadius: 5,
                             offset: const Offset(0, 10),
@@ -58,7 +60,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               width: 60,
                               height: 60,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF4CAF50).withOpacity(0.1),
+                                color: const Color(
+                                  0xFF4CAF50,
+                                ).withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -70,7 +74,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF4CAF50).withOpacity(0.15),
+                                color: const Color(
+                                  0xFF4CAF50,
+                                ).withValues(alpha: 0.15),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -85,7 +91,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                     const SizedBox(height: 50),
-                    
+
                     // Enhanced pagination dots
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -98,7 +104,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ],
                     ),
                     const SizedBox(height: 50),
-                    
+
                     // Enhanced title with gradient text effect
                     ShaderMask(
                       shaderCallback: (bounds) => const LinearGradient(
@@ -116,7 +122,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Enhanced description
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -135,7 +141,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
             ),
-            
+
             // Enhanced next button with shadow and animation
             Padding(
               padding: const EdgeInsets.all(30),
@@ -158,7 +164,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF4CAF50).withOpacity(0.4),
+                          color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
                           blurRadius: 20,
                           spreadRadius: 2,
                           offset: const Offset(0, 8),
@@ -196,4 +202,3 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 }
-

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../widgets/category_item.dart';
 import '../../root/controllers/navigation_controller.dart';
+import '../../../utils/responsive_helper.dart';
 
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
@@ -20,88 +21,154 @@ class CategoriesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final horizontalPadding = ResponsiveHelper.horizontalPadding(context);
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Enhanced header with back button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              child: Row(
-                children: [
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        // Switch to home tab since categories is part of main navigation
-                        Get.find<NavigationController>().changePage(0);
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Center content on larger screens
+            if (isDesktop) {
+              return Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: ResponsiveHelper.maxContentWidth(context)),
+                  child: _buildContent(context, horizontalPadding),
+                ),
+              );
+            }
+            return _buildContent(context, horizontalPadding);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, double horizontalPadding) {
+    return Column(
+      children: [
+        // Enhanced header with back button
+        Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF4CAF50),
+                Color(0xFF66BB6A),
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: ResponsiveHelper.responsiveSpacing(context, mobile: 20, tablet: 24, desktop: 28),
+            ),
+            child: Row(
+              children: [
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      Get.find<NavigationController>().changePage(0);
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          width: 1,
                         ),
-                        child: const Icon(
-                          Icons.arrow_back_rounded,
-                          color: Colors.black87,
-                          size: 20,
-                        ),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Colors.white,
+                        size: 22,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  const Text(
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Text(
                     'Categories',
                     style: TextStyle(
-                      fontSize: 26,
+                      fontSize: ResponsiveHelper.responsiveFontSize(context, mobile: 28, tablet: 32, desktop: 36),
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      letterSpacing: 0.3,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            
-            // Categories grid
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: GridView.builder(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 20,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 1.0,
+          ),
+        ),
+        
+        // Categories grid
+        Expanded(
+          child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
                   ),
-                  itemCount: CategoriesScreen.categories.length,
-                  itemBuilder: (context, index) {
-                    final category = CategoriesScreen.categories[index];
-                    return CategoryItem(
-                      name: category['name'],
-                      icon: category['icon'],
-                      color: category['color'],
-                      isGrid: true,
-                    );
-                  },
+                ),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    ResponsiveHelper.responsiveSpacing(context, mobile: 30, tablet: 36, desktop: 40),
+                    horizontalPadding,
+                    ResponsiveHelper.responsiveSpacing(context, mobile: 20, tablet: 24, desktop: 28),
+                  ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final crossAxisCount = ResponsiveHelper.gridCrossAxisCount(
+                        context,
+                        mobile: 3,
+                        tablet: 4,
+                        desktop: 5,
+                      );
+                      return GridView.builder(
+                        padding: EdgeInsets.only(
+                          bottom: ResponsiveHelper.responsiveSpacing(context, mobile: 20, tablet: 24, desktop: 28),
+                        ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: ResponsiveHelper.responsiveSpacing(context, mobile: 20, tablet: 24, desktop: 28),
+                          mainAxisSpacing: ResponsiveHelper.responsiveSpacing(context, mobile: 20, tablet: 24, desktop: 28),
+                          childAspectRatio: ResponsiveHelper.isMobile(context) ? 0.95 : 1.0,
+                        ),
+                    itemCount: CategoriesScreen.categories.length,
+                        itemBuilder: (context, index) {
+                          final category = CategoriesScreen.categories[index];
+                          return CategoryItem(
+                            name: category['name'] as String,
+                            icon: category['icon'] as IconData,
+                            color: category['color'] as Color,
+                            isGrid: true,
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
           ],
-        ),
-      ),
-    );
+        );
   }
 }
 

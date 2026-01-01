@@ -31,50 +31,64 @@ class NavIconItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
           decoration: BoxDecoration(
             gradient: isSelected
-                ? LinearGradient(
+                ? const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color(0xFF4CAF50).withOpacity(0.15),
-                      const Color(0xFF66BB6A).withOpacity(0.1),
+                      Color(0xFF4CAF50),
+                      Color(0xFF66BB6A),
                     ],
                   )
-                : null,
-            color: isSelected ? null : Colors.grey[50],
-            borderRadius: BorderRadius.circular(14),
+                : LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.grey[100]!,
+                      Colors.grey[50]!,
+                    ],
+                  ),
+            borderRadius: BorderRadius.circular(16),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF4CAF50).withOpacity(0.2),
+                      color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
+                      blurRadius: 12,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 8,
                       spreadRadius: 0,
                       offset: const Offset(0, 2),
                     ),
-                  ]
-                : null,
-            border: isSelected
-                ? Border.all(
-                    color: const Color(0xFF4CAF50).withOpacity(0.3),
-                    width: 1,
-                  )
-                : null,
+                  ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                color: isSelected ? const Color(0xFF4CAF50) : Colors.black87,
-                size: 26,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha:isSelected ? 0.3 : 0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: isSelected ? Colors.white : Colors.grey[700],
+                  size: 20,
+                ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? const Color(0xFF4CAF50) : Colors.black87,
-                  letterSpacing: 0.2,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  color: isSelected ? Colors.white : Colors.grey[700],
+                  letterSpacing: 0.3,
                 ),
                 textAlign: TextAlign.center,
               ),
