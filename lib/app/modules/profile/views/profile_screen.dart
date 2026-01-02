@@ -4,12 +4,35 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../controllers/profile_controller.dart';
 import '../../../utils/preferences_helper.dart';
+import '../../../services/image_service.dart';
 import '../../auth/views/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   ImageProvider? _getImageProvider(ProfileController controller) {
+    // First check if there's a base64 image stored in Firestore
+    if (controller.profileImagePath.value != null) {
+      final imagePath = controller.profileImagePath.value!;
+      
+      // Check if it's a base64 image
+      if (ImageService.isBase64Image(imagePath)) {
+        final bytes = ImageService.decodeBase64Image(imagePath);
+        return MemoryImage(bytes);
+      }
+      
+      // Check if it's a Firebase Storage URL (for backward compatibility)
+      if (imagePath.startsWith('http')) {
+        return NetworkImage(imagePath);
+      }
+      
+      // Check if it's a data URL (web)
+      if (imagePath.startsWith('data:image')) {
+        return NetworkImage(imagePath);
+      }
+    }
+    
+    // Fallback to local image
     if (kIsWeb) {
       if (controller.profileImageBytes.value != null) {
         return MemoryImage(controller.profileImageBytes.value!);
@@ -24,7 +47,10 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ProfileController profileController = Get.put(ProfileController());
+    // Get or create ProfileController
+    final ProfileController profileController = Get.isRegistered<ProfileController>()
+        ? Get.find<ProfileController>()
+        : Get.put(ProfileController());
     
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),

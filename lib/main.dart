@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'app/utils/icon_helper.dart';
+import 'app/utils/firestore_init.dart';
 import 'app/modules/home/views/onboarding_screen.dart';
 import 'app/modules/root/views/main_navigation_screen.dart';
 import 'app/modules/e_services/views/service_detail_screen.dart';
@@ -26,6 +28,15 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    
+    // Initialize icons in Firestore if not already done (run once)
+    final iconsInitialized = await FirestoreInit.areIconsInitialized();
+    if (!iconsInitialized) {
+      await FirestoreInit.initializeIcons();
+    }
+    
+    // Load icon configurations from Firestore
+    await IconHelper.initialize();
   } catch (e) {
     debugPrint('Firebase initialization error: $e');
   }

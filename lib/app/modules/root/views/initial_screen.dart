@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../home/views/onboarding_screen.dart';
-import '../../auth/views/login_screen.dart';
 import '../../../utils/preferences_helper.dart';
 
 /// Initial screen that checks if onboarding has been seen

@@ -24,20 +24,37 @@ class ServiceItem extends StatelessWidget {
     final svgPath = _getSvgPath();
     
     if (svgPath != null) {
+      // Debug: Print the path being used
+      debugPrint('ServiceItem: Loading SVG for service "$name" with path: "$svgPath"');
+      
       return SvgPicture.asset(
         svgPath,
         width: size,
         height: size,
         fit: BoxFit.contain,
-        placeholderBuilder: (BuildContext context) => Icon(
-          Icons.category,
-          size: size,
-          color: color,
-        ),
+        placeholderBuilder: (BuildContext context) {
+          debugPrint('ServiceItem: Placeholder shown for SVG: $svgPath');
+          return Icon(
+            Icons.category,
+            size: size,
+            color: color,
+          );
+        },
+        errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+          debugPrint('ServiceItem: ❌ Error loading SVG asset: "$svgPath" for service: "$name"');
+          debugPrint('ServiceItem: Error type: ${error.runtimeType}');
+          debugPrint('ServiceItem: Error details: $error');
+          return Icon(
+            Icons.category,
+            size: size,
+            color: color,
+          );
+        },
       );
     }
     
     // Fallback to a default icon if SVG not found
+    debugPrint('ServiceItem: No SVG path found for service: $name');
     return Icon(
       Icons.category,
       size: size,

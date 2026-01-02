@@ -21,11 +21,6 @@ class CategoryItem extends StatelessWidget {
     return Colors.white;
   }
   
-  // Professional border color
-  Color _getBorderColor() {
-    return color.withValues(alpha: 0.15);
-  }
-  
   // Get SVG path from icon helper
   String? _getSvgPath() {
     return IconHelper.getSvgIconPath(name);
@@ -36,20 +31,81 @@ class CategoryItem extends StatelessWidget {
     final svgPath = _getSvgPath();
     
     if (svgPath != null) {
-      return SvgPicture.asset(
-        svgPath,
-        width: size,
-        height: size,
-        fit: BoxFit.contain,
-        placeholderBuilder: (BuildContext context) => Icon(
+      // Debug: Print the path being used
+      debugPrint('Loading SVG for category "$name" with path: "$svgPath"');
+      
+      // Try loading the asset - need to use 'assets/' prefix since we explicitly listed them in pubspec.yaml
+      // First try with 'assets/' prefix, then without
+      String? pathToTry = svgPath.startsWith('assets/') ? svgPath : 'assets/$svgPath';
+      
+      try {
+        // Scale up the SVG to zoom in and crop whitespace, then clip to remove extra space
+        return ClipRect(
+          clipBehavior: Clip.hardEdge,
+          child: Transform.scale(
+            scale: 1.4, // Scale up to zoom in and crop whitespace around the icon
+            child: SvgPicture.asset(
+              pathToTry,
+              width: size,
+              height: size,
+              fit: BoxFit.contain,
+              alignment: Alignment.center,
+              placeholderBuilder: (BuildContext context) {
+                debugPrint('⚠️ CategoryItem: Placeholder shown for SVG: "$pathToTry" (asset may be loading)');
+                return Icon(
+                  Icons.category,
+                  size: size,
+                  color: color,
+                );
+              },
+              errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+                debugPrint('❌ CategoryItem: ERROR loading SVG asset: "$pathToTry" for category: "$name"');
+                debugPrint('❌ Error type: ${error.runtimeType}');
+                debugPrint('❌ Error details: $error');
+                
+                // Try the path without 'assets/' prefix as fallback
+                final fallbackPath = pathToTry.startsWith('assets/') ? pathToTry.substring(7) : pathToTry;
+                debugPrint('⚠️ CategoryItem: Trying fallback path: "$fallbackPath"');
+                
+                // Return a widget that tries the fallback path
+                return ClipRect(
+                  clipBehavior: Clip.hardEdge,
+                  child: Transform.scale(
+                    scale: 1.4, // Scale up to zoom in and crop whitespace
+                    child: SvgPicture.asset(
+                      fallbackPath,
+                      width: size,
+                      height: size,
+                      fit: BoxFit.contain,
+                      alignment: Alignment.center,
+                      errorBuilder: (context, error2, stackTrace2) {
+                        debugPrint('❌ CategoryItem: Fallback path also failed: "$fallbackPath"');
+                        return Icon(
+                          Icons.category,
+                          size: size,
+                          color: color,
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      } catch (e, stackTrace) {
+        debugPrint('❌ CategoryItem: Exception loading SVG "$pathToTry": $e');
+        debugPrint('❌ Stack trace: $stackTrace');
+        return Icon(
           Icons.category,
           size: size,
           color: color,
-        ),
-      );
+        );
+      }
     }
     
     // Fallback to a default icon if SVG not found
+    debugPrint('No SVG path found for category: $name');
     return Icon(
       Icons.category,
       size: size,
@@ -72,13 +128,10 @@ class CategoryItem extends StatelessWidget {
           },
           borderRadius: BorderRadius.circular(12),
           child: Container(
+            padding: EdgeInsets.all(ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 14, desktop: 16)),
             decoration: BoxDecoration(
               color: _getBackgroundColor(),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: _getBorderColor(),
-                width: 1.5,
-              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.06),
@@ -88,42 +141,15 @@ class CategoryItem extends StatelessWidget {
                 ),
               ],
             ),
-            child: Padding(
-              padding: EdgeInsets.all(ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 14, desktop: 16)),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Center(
-                      child: _buildSvgIcon(
-                        ResponsiveHelper.responsiveIconSize(context, mobile: 48, tablet: 56, desktop: 64),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: ResponsiveHelper.responsiveSpacing(context, mobile: 8, tablet: 10, desktop: 12)),
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.responsiveSpacing(context, mobile: 4, tablet: 6, desktop: 8)),
-                      child: Text(
-                        name,
-                        style: TextStyle(
-                          fontSize: ResponsiveHelper.responsiveFontSize(context, mobile: 11, tablet: 12, desktop: 13),
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey[900],
-                          letterSpacing: 0,
-                          height: 1.3,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Icon only - larger size since title is removed
+                _buildSvgIcon(
+                  ResponsiveHelper.responsiveIconSize(context, mobile: 72, tablet: 84, desktop: 96),
+                ),
+              ],
             ),
           ),
         ),
@@ -142,14 +168,10 @@ class CategoryItem extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(10),
         child: Container(
-          padding: EdgeInsets.all(ResponsiveHelper.responsiveSpacing(context, mobile: 10, tablet: 12, desktop: 14)),
+          padding: EdgeInsets.all(ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 14, desktop: 16)),
           decoration: BoxDecoration(
             color: _getBackgroundColor(),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: _getBorderColor(),
-              width: 1.5,
-            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.06),
@@ -162,19 +184,9 @@ class CategoryItem extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Icon only - larger size since title is removed
               _buildSvgIcon(
-                ResponsiveHelper.responsiveIconSize(context, mobile: 56, tablet: 64, desktop: 72),
-              ),
-              SizedBox(height: ResponsiveHelper.responsiveSpacing(context, mobile: 10, tablet: 12, desktop: 14)),
-              Text(
-                name,
-                style: TextStyle(
-                  fontSize: ResponsiveHelper.responsiveFontSize(context, mobile: 12, tablet: 13, desktop: 14),
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[900],
-                  letterSpacing: 0,
-                ),
-                textAlign: TextAlign.center,
+                ResponsiveHelper.responsiveIconSize(context, mobile: 76, tablet: 88, desktop: 100),
               ),
             ],
           ),

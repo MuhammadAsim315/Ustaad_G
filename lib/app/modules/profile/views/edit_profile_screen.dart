@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../controllers/profile_controller.dart';
+import '../../../services/image_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -36,6 +37,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   ImageProvider? _getImageProvider() {
+    // First check if there's a base64 image
+    if (_profileImagePath != null && ImageService.isBase64Image(_profileImagePath)) {
+      final bytes = ImageService.decodeBase64Image(_profileImagePath!);
+      return MemoryImage(bytes);
+    } else if (_profileController.profileImagePath.value != null && 
+               ImageService.isBase64Image(_profileController.profileImagePath.value)) {
+      final bytes = ImageService.decodeBase64Image(_profileController.profileImagePath.value!);
+      return MemoryImage(bytes);
+    }
+    
+    // Check if it's a Firebase Storage URL (for backward compatibility)
+    if (_profileImagePath != null && _profileImagePath!.startsWith('http')) {
+      return NetworkImage(_profileImagePath!);
+    } else if (_profileController.profileImagePath.value != null && 
+               _profileController.profileImagePath.value!.startsWith('http')) {
+      return NetworkImage(_profileController.profileImagePath.value!);
+    }
+    
+    // Check if it's a data URL (web)
+    if (_profileImagePath != null && _profileImagePath!.startsWith('data:image')) {
+      return NetworkImage(_profileImagePath!);
+    }
+    
+    // Fallback to local image
     if (kIsWeb) {
       if (_profileImageBytes != null) {
         return MemoryImage(_profileImageBytes!);
@@ -265,23 +290,55 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () {
-                          // Save profile
-                          _profileController.updateProfile(
-                            newName: _nameController.text,
-                            newEmail: _emailController.text,
-                            newPhone: _phoneController.text,
-                            newImage: _profileImage,
-                            newImageBytes: _profileImageBytes,
-                            newImagePath: _profileImagePath,
-                          );
-                          Get.back();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Profile updated successfully'),
-                              backgroundColor: Color(0xFF4CAF50),
-                            ),
-                          );
+                        onTap: () async {
+                          // Store context-dependent objects before async operations
+                          final messenger = ScaffoldMessenger.of(context);
+                          
+                          try {
+                            // Show loading indicator
+                            Get.dialog(
+                              const Center(child: CircularProgressIndicator()),
+                              barrierDismissible: false,
+                            );
+                            
+                            // Save profile (will upload image to Firebase Storage if new image selected)
+                            await _profileController.updateProfile(
+                              newName: _nameController.text,
+                              newEmail: _emailController.text,
+                              newPhone: _phoneController.text,
+                              newImage: _profileImage,
+                              newImageBytes: _profileImageBytes,
+                              // Don't pass newImagePath if it's a blob URL - let it upload to Storage
+                              newImagePath: (_profileImagePath != null && 
+                                            !_profileImagePath!.startsWith('blob:'))
+                                  ? _profileImagePath
+                                  : null,
+                            );
+                            
+                            Get.back(); // Close loading dialog
+                            
+                            if (mounted) {
+                              Get.back(); // Close edit profile screen
+                              
+                              messenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text('Profile updated successfully'),
+                                  backgroundColor: Color(0xFF4CAF50),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            Get.back(); // Close loading dialog
+                            
+                            if (mounted) {
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to update profile: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
                         },
                         borderRadius: BorderRadius.circular(16),
                         child: Container(

@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../root/views/main_navigation_screen.dart';
 import '../../../utils/preferences_helper.dart';
+import '../../../services/firestore_service.dart';
+import '../../profile/controllers/profile_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -58,10 +60,29 @@ class _LoginScreenState extends State<LoginScreen> {
         
         // Check if user exists and email is verified
         if (userCredential.user != null) {
+          final user = userCredential.user!;
+          
+          // Load user data from Firestore (or create if doesn't exist)
+          final userData = await FirestoreService.getUserData(user.uid);
+          if (userData == null && user.email != null) {
+            // User data doesn't exist in Firestore, create it
+            await FirestoreService.saveUserData(
+              userId: user.uid,
+              name: user.displayName ?? 'User',
+              email: user.email!,
+              phone: user.phoneNumber,
+            );
+          }
+          
           // User is logging in (existing user), so onboarding is already seen
           // Just set login status
           await PreferencesHelper.setLoggedIn(true);
           await PreferencesHelper.setGuest(false);
+          
+          // Load user data into ProfileController
+          if (Get.isRegistered<ProfileController>()) {
+            await Get.find<ProfileController>().loadUserData();
+          }
           
           if (mounted) {
             setState(() {

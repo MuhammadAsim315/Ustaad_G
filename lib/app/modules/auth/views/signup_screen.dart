@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../root/views/main_navigation_screen.dart';
 import '../../../utils/preferences_helper.dart';
+import '../../../services/firestore_service.dart';
+import '../../profile/controllers/profile_controller.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -47,13 +49,27 @@ class _SignupScreenState extends State<SignupScreen> {
         
         // Update user profile with display name
         if (userCredential.user != null) {
-          await userCredential.user!.updateDisplayName(_nameController.text.trim());
-          await userCredential.user!.reload();
+          final user = userCredential.user!;
+          await user.updateDisplayName(_nameController.text.trim());
+          await user.reload();
+          
+          // Save user data to Firestore
+          await FirestoreService.saveUserData(
+            userId: user.uid,
+            name: _nameController.text.trim(),
+            email: _emailController.text.trim(),
+            phone: _phoneController.text.trim(),
+          );
           
           // Mark onboarding as seen and user as logged in
           await PreferencesHelper.setOnboardingSeen(true);
           await PreferencesHelper.setLoggedIn(true);
           await PreferencesHelper.setGuest(false);
+          
+          // Load user data into ProfileController
+          if (Get.isRegistered<ProfileController>()) {
+            await Get.find<ProfileController>().loadUserData();
+          }
           
           if (mounted) {
             setState(() {
