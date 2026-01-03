@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../utils/icon_helper.dart';
+import '../controllers/service_detail_controller.dart';
 
 class ServiceDetailScreen extends StatelessWidget {
   final String serviceName;
@@ -17,6 +18,10 @@ class ServiceDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ServiceDetailController controller = Get.put(
+      ServiceDetailController(serviceName: serviceName),
+    );
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -69,188 +74,127 @@ class ServiceDetailScreen extends StatelessWidget {
               ),
             ),
 
-            // Service icon and description
+            // Service icon and workers list
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Service icon display
-                    Center(
-                      child: _buildServiceIcon(),
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
                     ),
-                    const SizedBox(height: 30),
+                  );
+                }
 
-                    // Description section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Service Description',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Professional $serviceName services with experienced and verified service providers. We ensure quality work and customer satisfaction.',
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey[700],
-                              height: 1.6,
-                            ),
-                          ),
-                          const SizedBox(height: 30),
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Service icon display
+                      Center(
+                        child: _buildServiceIcon(),
+                      ),
+                      const SizedBox(height: 30),
 
-                          // Estimated price
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[50],
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: Colors.grey[200]!,
-                                width: 1,
+                      // Description section
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Service Description',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
                               ),
                             ),
-                            child: Row(
+                            const SizedBox(height: 12),
+                            Text(
+                              'Professional $serviceName services with experienced and verified service providers. We ensure quality work and customer satisfaction.',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.grey[700],
+                                height: 1.6,
+                              ),
+                            ),
+                            const SizedBox(height: 30),
+
+                            // Available providers section
+                            Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Estimated Price',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    const Text(
-                                      'PKR 1,500 - 3,000',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF4CAF50),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(
-                                    Icons.attach_money,
-                                    color: Color(0xFF4CAF50),
-                                    size: 28,
+                                const Text(
+                                  'Available Providers',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
                                   ),
                                 ),
+                                if (controller.workers.isNotEmpty)
+                                  Text(
+                                    '${controller.workers.length} available',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
                               ],
                             ),
-                          ),
-                          const SizedBox(height: 30),
+                            const SizedBox(height: 16),
 
-                          // Available providers section
-                          const Text(
-                            'Available Providers',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Provider cards
-                          _buildProviderCard(
-                            name: 'Ahmed Ali',
-                            rating: 4.8,
-                            reviews: 124,
-                            experience: '5 years',
-                          ),
-                          const SizedBox(height: 12),
-                          _buildProviderCard(
-                            name: 'Hassan Khan',
-                            rating: 4.9,
-                            reviews: 89,
-                            experience: '7 years',
-                          ),
-                          const SizedBox(height: 12),
-                          _buildProviderCard(
-                            name: 'Usman Malik',
-                            rating: 4.7,
-                            reviews: 156,
-                            experience: '4 years',
-                          ),
-                          const SizedBox(height: 30),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Book Now button
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withValues(alpha: 0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    Get.toNamed('/booking', arguments: {
-                      'serviceName': serviceName,
-                      'serviceSvgPath': serviceSvgPath ?? IconHelper.getSvgIconPath(serviceName),
-                    });
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
+                            // Provider cards
+                            if (controller.workers.isEmpty)
+                              Container(
+                                padding: const EdgeInsets.all(40),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[50],
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.grey[200]!,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.person_outline,
+                                        size: 48,
+                                        color: Colors.grey[400],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        'No workers available',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            else
+                              ...controller.workers.map((worker) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _buildProviderCard(
+                                  workerId: worker['id'] ?? '',
+                                  name: worker['name'] ?? 'Worker',
+                                  rating: (worker['averageRating'] ?? worker['rating'] ?? 0.0) as double,
+                                  reviews: (worker['totalReviews'] ?? worker['reviews'] ?? 0) as int,
+                                  experience: worker['experience'] ?? 'N/A',
+                                ),
+                              )),
+                            const SizedBox(height: 30),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: const Text(
-                      'Book Now',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
                       ),
-                    ),
+                    ],
                   ),
-                ),
-              ),
+                );
+              }),
             ),
           ],
         ),
@@ -285,76 +229,98 @@ class ServiceDetailScreen extends StatelessWidget {
   }
 
   Widget _buildProviderCard({
+    required String workerId,
     required String name,
     required double rating,
     required int reviews,
     required String experience,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Get.toNamed('/worker-profile', arguments: {
+            'workerId': workerId,
+            'workerName': name,
+          });
+        },
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.grey[200]!,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              shape: BoxShape.circle,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.grey[200]!,
+              width: 1,
             ),
-            child: const Icon(
-              Icons.person,
-              color: Color(0xFF4A5C7A),
-              size: 30,
-            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+          child: Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(height: 4),
-                Row(
+                child: const Icon(
+                  Icons.person,
+                  color: Color(0xFF4A5C7A),
+                  size: 30,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.star,
-                      color: Colors.amber,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
                     Text(
-                      '$rating',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[700],
+                      name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$rating',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '($reviews reviews)',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
                     Text(
-                      '($reviews reviews)',
+                      '$experience experience',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
@@ -362,22 +328,14 @@ class ServiceDetailScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '$experience experience',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: Colors.grey[400],
+              ),
+            ],
           ),
-          Icon(
-            Icons.chevron_right,
-            color: Colors.grey[400],
-          ),
-        ],
+        ),
       ),
     );
   }

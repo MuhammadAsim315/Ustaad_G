@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../services/firestore_service.dart';
 
 class ReviewScreen extends StatefulWidget {
   const ReviewScreen({super.key});
@@ -11,6 +13,7 @@ class ReviewScreen extends StatefulWidget {
 class _ReviewScreenState extends State<ReviewScreen> {
   int _rating = 0;
   final TextEditingController _reviewController = TextEditingController();
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -228,8 +231,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () {
+                  onTap: _isSubmitting ? null : () async {
                     if (_rating == 0) {
+                      if (!mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Please select a rating'),
@@ -238,14 +242,89 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       );
                       return;
                     }
+                    
+                    setState(() {
+                      _isSubmitting = true;
+                    });
+                    
+                    // Store messenger before async operations
+                    final messenger = ScaffoldMessenger.of(context);
+                    
                     // Submit review
-                    Get.back();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Thank you for your review!'),
-                        backgroundColor: Color(0xFF4CAF50),
-                      ),
-                    );
+                    try {
+                      final user = FirebaseAuth.instance.currentUser;
+                      if (user == null) {
+                        if (!mounted) return;
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Please login to submit a review'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        setState(() {
+                          _isSubmitting = false;
+                        });
+                        return;
+                      }
+                      
+                      // Get worker/provider ID from arguments
+                      final workerId = args?['workerId'] ?? args?['providerId'] ?? '';
+                      final bookingId = args?['bookingId'];
+                      
+                      if (workerId.isEmpty) {
+                        if (!mounted) return;
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Worker information not found'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        setState(() {
+                          _isSubmitting = false;
+                        });
+                        return;
+                      }
+                      
+                      // Get user data for reviewer name
+                      final userData = await FirestoreService.getUserData(user.uid);
+                      final reviewerName = userData?['name']?.toString() ?? 
+                                         user.displayName ?? 
+                                         'Anonymous';
+                      
+                      // Save review
+                      await FirestoreService.saveReview(
+                        workerId: workerId,
+                        reviewerId: user.uid,
+                        reviewerName: reviewerName,
+                        rating: _rating,
+                        review: _reviewController.text.trim(),
+                        bookingId: bookingId,
+                      );
+                      
+                      if (!mounted) return;
+                      Get.back();
+                      if (!mounted) return;
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Thank you for your review!'),
+                          backgroundColor: Color(0xFF4CAF50),
+                        ),
+                      );
+                    } catch (e) {
+                      if (!mounted) return;
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text('Failed to submit review: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    } finally {
+                      if (mounted) {
+                        setState(() {
+                          _isSubmitting = false;
+                        });
+                      }
+                    }
                   },
                   borderRadius: BorderRadius.circular(16),
                   child: Container(

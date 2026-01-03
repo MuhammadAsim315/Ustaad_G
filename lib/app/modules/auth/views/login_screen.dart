@@ -23,19 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _checkOnboardingStatus();
-  }
-
-  Future<void> _checkOnboardingStatus() async {
-    final hasSeenOnboarding = await PreferencesHelper.hasSeenOnboarding();
-    
-    if (!hasSeenOnboarding && mounted) {
-      // Small delay to show login screen briefly
-      await Future.delayed(const Duration(milliseconds: 300));
-      if (mounted) {
-        Get.offNamed('/onboarding');
-      }
-    }
+    // Onboarding removed - login screen is the entry point
   }
 
   @override

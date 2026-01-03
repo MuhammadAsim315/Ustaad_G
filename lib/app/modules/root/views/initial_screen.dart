@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../utils/preferences_helper.dart';
 
 /// Initial screen that checks if onboarding has been seen
 /// and routes to appropriate screen
@@ -19,18 +18,13 @@ class _InitialScreenState extends State<InitialScreen> {
   }
 
   Future<void> _checkOnboardingStatus() async {
-    final hasSeenOnboarding = await PreferencesHelper.hasSeenOnboarding();
-    
     // Small delay to show splash if needed
     await Future.delayed(const Duration(milliseconds: 500));
     
     if (!mounted) return;
     
-    if (hasSeenOnboarding) {
-      Get.offNamed('/login');
-    } else {
-      Get.offNamed('/onboarding');
-    }
+    // Always go to login screen (onboarding removed)
+    Get.offNamed('/login');
   }
 
   @override

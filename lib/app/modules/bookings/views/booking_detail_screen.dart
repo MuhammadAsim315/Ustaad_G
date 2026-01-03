@@ -211,6 +211,53 @@ class BookingDetailScreen extends StatelessWidget {
                             booking['providerName'],
                           ),
                           const SizedBox(height: 12),
+                          // Chat button
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                final providerName = booking['providerName']?.toString() ?? 'Service Provider';
+                                final workerId = providerName.toLowerCase().replaceAll(' ', '_');
+                                
+                                Get.toNamed('/chat', arguments: {
+                                  'workerId': workerId,
+                                  'workerName': providerName,
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(
+                                      Icons.chat_bubble_outline,
+                                      color: Color(0xFF4CAF50),
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Chat with Provider',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF4CAF50),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
                           _buildDetailRow(
                             Icons.calendar_today,
                             'Date',
@@ -361,8 +408,15 @@ class BookingDetailScreen extends StatelessWidget {
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () {
-                            // Rate service
-                            Get.toNamed('/review', arguments: booking);
+                            // Rate service - generate workerId from providerName
+                            final providerName = booking['providerName']?.toString() ?? '';
+                            final workerId = providerName.toLowerCase().replaceAll(' ', '_');
+                            
+                            Get.toNamed('/review', arguments: {
+                              ...booking,
+                              'workerId': workerId,
+                              'providerId': workerId,
+                            });
                           },
                           borderRadius: BorderRadius.circular(16),
                           child: Container(

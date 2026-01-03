@@ -27,30 +27,80 @@ class ServiceItem extends StatelessWidget {
       // Debug: Print the path being used
       debugPrint('ServiceItem: Loading SVG for service "$name" with path: "$svgPath"');
       
-      return SvgPicture.asset(
-        svgPath,
-        width: size,
-        height: size,
-        fit: BoxFit.contain,
-        placeholderBuilder: (BuildContext context) {
-          debugPrint('ServiceItem: Placeholder shown for SVG: $svgPath');
-          return Icon(
-            Icons.category,
-            size: size,
-            color: color,
-          );
-        },
-        errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
-          debugPrint('ServiceItem: ❌ Error loading SVG asset: "$svgPath" for service: "$name"');
-          debugPrint('ServiceItem: Error type: ${error.runtimeType}');
-          debugPrint('ServiceItem: Error details: $error');
-          return Icon(
-            Icons.category,
-            size: size,
-            color: color,
-          );
-        },
-      );
+      // Try loading the asset - need to use 'assets/' prefix since we explicitly listed them in pubspec.yaml
+      // First try with 'assets/' prefix, then without
+      final pathToTry = svgPath.startsWith('assets/') ? svgPath : 'assets/$svgPath';
+      
+      try {
+        // Scale up the SVG to zoom in and crop whitespace, then clip to remove extra space
+        // All icons use the same rendering pipeline for consistent quality like welder and mechanic
+        // Increased scale and using BoxFit.fitWidth for better clarity and size
+        return ClipRect(
+          clipBehavior: Clip.hardEdge,
+          child: Transform.scale(
+            scale: 1.6, // Increased scale for better clarity and size like welder/mechanic
+            child: SvgPicture.asset(
+              pathToTry,
+              width: size * 1.1, // Slightly larger width for better clarity
+              height: size * 1.1, // Slightly larger height for better clarity
+              fit: BoxFit.fitWidth, // Use fitWidth for better clarity
+              alignment: Alignment.center,
+              allowDrawingOutsideViewBox: false,
+              semanticsLabel: name,
+              placeholderBuilder: (BuildContext context) {
+                  debugPrint('⚠️ ServiceItem: Placeholder shown for SVG: "$pathToTry" (asset may be loading)');
+                return Icon(
+                  Icons.category,
+                  size: size,
+                  color: color,
+                );
+              },
+              errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+                debugPrint('❌ ServiceItem: ERROR loading SVG asset: "$pathToTry" for service: "$name"');
+                debugPrint('❌ Error type: ${error.runtimeType}');
+                debugPrint('❌ Error details: $error');
+                
+                // Try the path without 'assets/' prefix as fallback
+                final fallbackPath = pathToTry.startsWith('assets/') ? pathToTry.substring(7) : pathToTry;
+                debugPrint('⚠️ ServiceItem: Trying fallback path: "$fallbackPath"');
+                
+                // Return a widget that tries the fallback path
+                return ClipRect(
+                  clipBehavior: Clip.hardEdge,
+                  child: Transform.scale(
+                    scale: 1.6, // Increased scale for better clarity and size like welder/mechanic
+                    child: SvgPicture.asset(
+                      fallbackPath,
+                      width: size * 1.1, // Slightly larger width for better clarity
+                      height: size * 1.1, // Slightly larger height for better clarity
+                      fit: BoxFit.fitWidth, // Use fitWidth for better clarity
+                      alignment: Alignment.center,
+                      allowDrawingOutsideViewBox: false,
+                      semanticsLabel: name,
+                      errorBuilder: (context, error2, stackTrace2) {
+                        debugPrint('❌ ServiceItem: Fallback path also failed: "$fallbackPath"');
+                        return Icon(
+                          Icons.category,
+                          size: size,
+                          color: color,
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      } catch (e, stackTrace) {
+        debugPrint('❌ ServiceItem: Exception loading SVG "$pathToTry": $e');
+        debugPrint('❌ Stack trace: $stackTrace');
+        return Icon(
+          Icons.category,
+          size: size,
+          color: color,
+        );
+      }
     }
     
     // Fallback to a default icon if SVG not found
@@ -95,20 +145,11 @@ class ServiceItem extends StatelessWidget {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Icon only - larger size for better clarity like welder/mechanic
               _buildSvgIcon(
-                ResponsiveHelper.responsiveIconSize(context, mobile: 56, tablet: 64, desktop: 72),
-              ),
-              SizedBox(height: ResponsiveHelper.responsiveSpacing(context, mobile: 10, tablet: 12, desktop: 14)),
-              Text(
-                name,
-                style: TextStyle(
-                  fontSize: ResponsiveHelper.responsiveFontSize(context, mobile: 12, tablet: 13, desktop: 14),
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[900],
-                  letterSpacing: 0,
-                ),
-                textAlign: TextAlign.center,
+                ResponsiveHelper.responsiveIconSize(context, mobile: 84, tablet: 96, desktop: 108),
               ),
             ],
           ),

@@ -61,8 +61,7 @@ class _SignupScreenState extends State<SignupScreen> {
             phone: _phoneController.text.trim(),
           );
           
-          // Mark onboarding as seen and user as logged in
-          await PreferencesHelper.setOnboardingSeen(true);
+          // Mark user as logged in
           await PreferencesHelper.setLoggedIn(true);
           await PreferencesHelper.setGuest(false);
           

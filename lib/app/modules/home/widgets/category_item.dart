@@ -40,16 +40,20 @@ class CategoryItem extends StatelessWidget {
       
       try {
         // Scale up the SVG to zoom in and crop whitespace, then clip to remove extra space
+        // All icons use the same rendering pipeline for consistent quality like welder and mechanic
+        // Increased scale and using BoxFit.fitWidth for better clarity and size
         return ClipRect(
           clipBehavior: Clip.hardEdge,
           child: Transform.scale(
-            scale: 1.4, // Scale up to zoom in and crop whitespace around the icon
+            scale: 1.6, // Increased scale for better clarity and size like welder/mechanic
             child: SvgPicture.asset(
               pathToTry,
-              width: size,
-              height: size,
-              fit: BoxFit.contain,
+              width: size * 1.1, // Slightly larger width for better clarity
+              height: size * 1.1, // Slightly larger height for better clarity
+              fit: BoxFit.fitWidth, // Use fitWidth for better clarity
               alignment: Alignment.center,
+              allowDrawingOutsideViewBox: false,
+              semanticsLabel: name,
               placeholderBuilder: (BuildContext context) {
                 debugPrint('⚠️ CategoryItem: Placeholder shown for SVG: "$pathToTry" (asset may be loading)');
                 return Icon(
@@ -71,13 +75,15 @@ class CategoryItem extends StatelessWidget {
                 return ClipRect(
                   clipBehavior: Clip.hardEdge,
                   child: Transform.scale(
-                    scale: 1.4, // Scale up to zoom in and crop whitespace
+                    scale: 1.6, // Increased scale for better clarity and size like welder/mechanic
                     child: SvgPicture.asset(
                       fallbackPath,
-                      width: size,
-                      height: size,
-                      fit: BoxFit.contain,
+                      width: size * 1.1, // Slightly larger width for better clarity
+                      height: size * 1.1, // Slightly larger height for better clarity
+                      fit: BoxFit.fitWidth, // Use fitWidth for better clarity
                       alignment: Alignment.center,
+                      allowDrawingOutsideViewBox: false,
+                      semanticsLabel: name,
                       errorBuilder: (context, error2, stackTrace2) {
                         debugPrint('❌ CategoryItem: Fallback path also failed: "$fallbackPath"');
                         return Icon(
@@ -145,9 +151,9 @@ class CategoryItem extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Icon only - larger size since title is removed
+                // Icon only - larger size for better clarity like welder/mechanic
                 _buildSvgIcon(
-                  ResponsiveHelper.responsiveIconSize(context, mobile: 72, tablet: 84, desktop: 96),
+                  ResponsiveHelper.responsiveIconSize(context, mobile: 80, tablet: 92, desktop: 104),
                 ),
               ],
             ),
@@ -184,9 +190,9 @@ class CategoryItem extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Icon only - larger size since title is removed
+              // Icon only - larger size for better clarity like welder/mechanic
               _buildSvgIcon(
-                ResponsiveHelper.responsiveIconSize(context, mobile: 76, tablet: 88, desktop: 100),
+                ResponsiveHelper.responsiveIconSize(context, mobile: 84, tablet: 96, desktop: 108),
               ),
             ],
           ),

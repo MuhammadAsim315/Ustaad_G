@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'app/utils/icon_helper.dart';
 import 'app/utils/firestore_init.dart';
-import 'app/modules/home/views/onboarding_screen.dart';
 import 'app/modules/root/views/main_navigation_screen.dart';
 import 'app/modules/e_services/views/service_detail_screen.dart';
 import 'app/modules/bookings/views/booking_screen.dart';
@@ -21,6 +20,8 @@ import 'app/modules/home/views/my_services_screen.dart';
 import 'app/modules/home/views/earnings_screen.dart';
 import 'app/modules/auth/views/login_screen.dart';
 import 'app/modules/auth/views/signup_screen.dart';
+import 'app/modules/worker_profile/views/worker_profile_screen.dart';
+import 'app/modules/chat/views/chat_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -71,7 +72,6 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/login',
       getPages: [
-        GetPage(name: '/onboarding', page: () => const OnboardingScreen()),
         GetPage(name: '/login', page: () => const LoginScreen()),
         GetPage(name: '/signup', page: () => const SignupScreen()),
         GetPage(name: '/main', page: () => const MainNavigationScreen()),
@@ -95,6 +95,8 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/newsfeed', page: () => const NewsfeedScreen()),
         GetPage(name: '/my-services', page: () => const MyServicesScreen()),
         GetPage(name: '/earnings', page: () => const EarningsScreen()),
+        GetPage(name: '/worker-profile', page: () => const WorkerProfileScreen()),
+        GetPage(name: '/chat', page: () => const ChatScreen()),
       ],
     );
   }
