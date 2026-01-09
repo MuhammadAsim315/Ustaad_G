@@ -80,6 +80,8 @@ class _BookingScreenState extends State<BookingScreen> {
   Widget build(BuildContext context) {
     final Map<String, dynamic>? args = Get.arguments;
     final String serviceName = args?['serviceName'] ?? 'Service';
+    final String? workerId = args?['workerId'];
+    final String? workerName = args?['workerName'];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -598,6 +600,8 @@ class _BookingScreenState extends State<BookingScreen> {
                         'time': _selectedTime,
                         'address': _selectedAddress,
                         'total': 2200,
+                        'workerId': workerId,
+                        'workerName': workerName,
                       });
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(

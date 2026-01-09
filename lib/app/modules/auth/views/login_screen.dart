@@ -53,13 +53,27 @@ class _LoginScreenState extends State<LoginScreen> {
           // Load user data from Firestore (or create if doesn't exist)
           final userData = await FirestoreService.getUserData(user.uid);
           if (userData == null && user.email != null) {
-            // User data doesn't exist in Firestore, create it
+            // User data doesn't exist in Firestore, create it with default role
             await FirestoreService.saveUserData(
               userId: user.uid,
               name: user.displayName ?? 'User',
               email: user.email!,
               phone: user.phoneNumber,
+              role: 'customer', // Default role
             );
+          }
+          
+          // Track login event
+          await AnalyticsService.logLogin(
+            method: 'email',
+            userId: user.uid,
+          );
+          await AnalyticsService.setUserId(user.uid);
+          
+          // Set user role if available
+          if (userData != null) {
+            final role = userData['role'] as String? ?? 'customer';
+            await AnalyticsService.setUserRole(role);
           }
           
           // User is logging in (existing user), so onboarding is already seen

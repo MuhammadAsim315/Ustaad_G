@@ -147,15 +147,13 @@ class CategoryItem extends StatelessWidget {
                 ),
               ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Icon only - larger size for better clarity like welder/mechanic
-                _buildSvgIcon(
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: _buildSvgIcon(
                   ResponsiveHelper.responsiveIconSize(context, mobile: 80, tablet: 92, desktop: 104),
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -173,30 +171,29 @@ class CategoryItem extends StatelessWidget {
           });
         },
         borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: EdgeInsets.all(ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 14, desktop: 16)),
-          decoration: BoxDecoration(
-            color: _getBackgroundColor(),
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 8,
-                spreadRadius: 0,
-                offset: const Offset(0, 2),
+          child: Container(
+            padding: EdgeInsets.all(ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 14, desktop: 16)),
+            decoration: BoxDecoration(
+              color: _getBackgroundColor(),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 8,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: _buildSvgIcon(
+                  ResponsiveHelper.responsiveIconSize(context, mobile: 84, tablet: 96, desktop: 108),
+                ),
               ),
-            ],
+            ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Icon only - larger size for better clarity like welder/mechanic
-              _buildSvgIcon(
-                ResponsiveHelper.responsiveIconSize(context, mobile: 84, tablet: 96, desktop: 108),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

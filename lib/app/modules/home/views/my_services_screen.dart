@@ -2,12 +2,84 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../utils/icon_helper.dart';
+import '../../../services/role_service.dart';
 
 class MyServicesScreen extends StatelessWidget {
   const MyServicesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Check if user is worker or admin
+    return FutureBuilder<bool>(
+      future: Future.wait([
+        RoleService.isWorker(),
+        RoleService.isAdmin(),
+      ]).then((results) => results[0] || results[1]),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+              ),
+            ),
+          );
+        }
+
+        if (!snapshot.hasData || !snapshot.data!) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Access Denied'),
+              backgroundColor: Colors.white,
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.lock_outline,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Worker Access Required',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'This screen is only available for workers',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => Get.back(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4CAF50),
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return _buildContent(context);
+      },
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    // Mock data - will be replaced with real data from Firestore
     final List<Map<String, dynamic>> myServices = [
       {
         'name': 'Plumber',

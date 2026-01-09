@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
+import 'app/services/notification_service.dart';
+import 'app/services/analytics_service.dart';
 import 'app/utils/icon_helper.dart';
 import 'app/utils/firestore_init.dart';
+import 'app/services/auth_service.dart';
 import 'app/modules/root/views/main_navigation_screen.dart';
 import 'app/modules/e_services/views/service_detail_screen.dart';
 import 'app/modules/bookings/views/booking_screen.dart';
 import 'app/modules/bookings/views/my_bookings_screen.dart';
+import 'app/modules/bookings/views/worker_bookings_screen.dart';
 import 'app/modules/bookings/views/booking_success_screen.dart';
 import 'app/modules/checkout/views/checkout_screen.dart';
 import 'app/modules/profile/views/edit_profile_screen.dart';
@@ -22,6 +27,12 @@ import 'app/modules/auth/views/login_screen.dart';
 import 'app/modules/auth/views/signup_screen.dart';
 import 'app/modules/worker_profile/views/worker_profile_screen.dart';
 import 'app/modules/chat/views/chat_screen.dart';
+import 'app/modules/report/views/report_screen.dart';
+import 'app/modules/admin/views/admin_dashboard_screen.dart';
+import 'app/modules/admin/views/user_management_screen.dart';
+import 'app/modules/admin/views/booking_management_screen.dart';
+import 'app/modules/admin/views/reports_management_screen.dart';
+import 'app/modules/worker_onboarding/views/worker_onboarding_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +40,15 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    
+    // Set up background message handler
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    
+    // Initialize notification service
+    await NotificationService.initialize();
+    
+    // Initialize Analytics and Crashlytics
+    await AnalyticsService.initialize();
     
     // Initialize icons in Firestore if not already done (run once)
     final iconsInitialized = await FirestoreInit.areIconsInitialized();
@@ -70,7 +90,8 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.white,
         ),
       ),
-      initialRoute: '/login',
+      // Use auth state to determine initial route
+      initialRoute: AuthService.isLoggedIn ? '/main' : '/login',
       getPages: [
         GetPage(name: '/login', page: () => const LoginScreen()),
         GetPage(name: '/signup', page: () => const SignupScreen()),
@@ -87,6 +108,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/checkout', page: () => const CheckoutScreen()),
         GetPage(name: '/booking-success', page: () => const BookingSuccessScreen()),
         GetPage(name: '/my-bookings', page: () => const MyBookingsScreen()),
+        GetPage(name: '/worker-bookings', page: () => const WorkerBookingsScreen()),
         GetPage(name: '/edit-profile', page: () => const EditProfileScreen()),
         GetPage(name: '/settings', page: () => const SettingsScreen()),
         GetPage(name: '/help-support', page: () => const HelpSupportScreen()),
@@ -97,6 +119,15 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/earnings', page: () => const EarningsScreen()),
         GetPage(name: '/worker-profile', page: () => const WorkerProfileScreen()),
         GetPage(name: '/chat', page: () => const ChatScreen()),
+        GetPage(name: '/report', page: () => const ReportScreen()),
+        // Admin routes
+        // Admin routes
+        GetPage(name: '/admin-dashboard', page: () => const AdminDashboardScreen()),
+        GetPage(name: '/admin-users', page: () => const UserManagementScreen()),
+        GetPage(name: '/admin-bookings', page: () => const BookingManagementScreen()),
+        GetPage(name: '/admin-reports', page: () => const ReportsManagementScreen()),
+        // Worker onboarding
+        GetPage(name: '/worker-onboarding', page: () => const WorkerOnboardingScreen()),
       ],
     );
   }

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../root/views/main_navigation_screen.dart';
 import '../../../utils/preferences_helper.dart';
 import '../../../services/firestore_service.dart';
+import '../../../services/analytics_service.dart';
 import '../../profile/controllers/profile_controller.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -53,13 +54,22 @@ class _SignupScreenState extends State<SignupScreen> {
           await user.updateDisplayName(_nameController.text.trim());
           await user.reload();
           
-          // Save user data to Firestore
+          // Save user data to Firestore (default role: 'customer')
           await FirestoreService.saveUserData(
             userId: user.uid,
             name: _nameController.text.trim(),
             email: _emailController.text.trim(),
             phone: _phoneController.text.trim(),
+            role: 'customer', // Default role - can be changed later via worker onboarding
           );
+          
+          // Track signup event
+          await AnalyticsService.logSignUp(
+            method: 'email',
+            userId: user.uid,
+          );
+          await AnalyticsService.setUserId(user.uid);
+          await AnalyticsService.setUserRole('customer');
           
           // Mark user as logged in
           await PreferencesHelper.setLoggedIn(true);

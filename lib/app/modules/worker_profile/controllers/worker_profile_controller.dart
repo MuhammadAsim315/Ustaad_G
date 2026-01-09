@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import '../../../services/firestore_service.dart';
+import '../../../services/analytics_service.dart';
 
 class WorkerProfileController extends GetxController {
   final String workerId;
@@ -23,6 +24,11 @@ class WorkerProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // Track worker profile view
+    AnalyticsService.logWorkerProfileViewed(
+      workerId: workerId,
+      workerName: workerName ?? 'Service Provider',
+    );
     loadWorkerData();
     loadReviews();
     loadFAQs();

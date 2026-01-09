@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../services/firestore_service.dart';
+import '../../../utils/icon_helper.dart';
 
 class CheckoutScreen extends StatelessWidget {
   const CheckoutScreen({super.key});
@@ -10,6 +13,9 @@ class CheckoutScreen extends StatelessWidget {
     final String serviceName = args?['serviceName'] ?? 'Service';
     final String address = args?['address'] ?? '';
     final int total = args?['total'] ?? 0;
+    final DateTime? date = args?['date'] as DateTime?;
+    final String? workerId = args?['workerId'] as String?;
+    final String? workerName = args?['workerName'] as String?;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -153,7 +159,30 @@ class CheckoutScreen extends StatelessWidget {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () {
+                  onTap: () async {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user == null) {
+                      Get.snackbar(
+                        'Error',
+                        'Please login to continue',
+                        snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: Colors.red,
+                        colorText: Colors.white,
+                      );
+                      return;
+                    }
+
+                    if (date == null) {
+                      Get.snackbar(
+                        'Error',
+                        'Please select a date',
+                        snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: Colors.red,
+                        colorText: Colors.white,
+                      );
+                      return;
+                    }
+
                     // Show payment processing dialog
                     showDialog(
                       context: context,
@@ -165,13 +194,57 @@ class CheckoutScreen extends StatelessWidget {
                       ),
                     );
 
-                    // Simulate payment processing
-                    Future.delayed(const Duration(seconds: 2), () {
+                    try {
+                      // Get service icon path
+                      final serviceSvgPath = IconHelper.getSvgIconPath(serviceName) ?? '';
+                      // Default color - can be enhanced later with IconHelper.getServiceColor()
+                      final serviceColor = Colors.blue;
+
+                      // Format time
+                      String timeString = 'Not specified';
+                      if (args?['time'] != null) {
+                        final time = args!['time'];
+                        if (time is TimeOfDay) {
+                          timeString = time.format(context);
+                        } else {
+                          timeString = time.toString();
+                        }
+                      }
+
+                      // Save booking to Firestore
+                      await FirestoreService.saveBooking(
+                        userId: user.uid,
+                        serviceName: serviceName,
+                        serviceSvgPath: serviceSvgPath,
+                        serviceColorValue: serviceColor.value,
+                        providerName: workerName ?? 'Service Provider',
+                        date: date,
+                        time: timeString,
+                        address: address,
+                        amount: total.toDouble(),
+                        status: workerId != null ? 'pending' : 'pending', // Will be accepted by worker
+                        workerId: workerId, // Pass workerId if booking is for specific worker
+                      );
+
+                      // Simulate payment processing
+                      await Future.delayed(const Duration(seconds: 1));
+
                       if (context.mounted) {
                         Navigator.pop(context); // Close loading dialog
                       }
                       Get.offNamed('/booking-success');
-                    });
+                    } catch (e) {
+                      if (context.mounted) {
+                        Navigator.pop(context); // Close loading dialog
+                      }
+                      Get.snackbar(
+                        'Error',
+                        'Failed to create booking: $e',
+                        snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: Colors.red,
+                        colorText: Colors.white,
+                      );
+                    }
                   },
                   borderRadius: BorderRadius.circular(16),
                   child: Container(

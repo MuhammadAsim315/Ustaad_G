@@ -1,0 +1,275 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==================== HELPER FUNCTIONS ====================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Get user data
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    // Check if user has specific role
+    function hasRole(role) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             getUserData().role == role;
+    }
+    
+    // Check if user is admin
+    function isAdmin() {
+      return hasRole('admin');
+    }
+    
+    // Check if user is worker
+    function isWorker() {
+      return hasRole('worker');
+    }
+    
+    // Check if user is customer
+    function isCustomer() {
+      return hasRole('customer');
+    }
+    
+    // Check if user is banned
+    function isBanned() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             getUserData().isBanned == true;
+    }
+    
+    // Check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Get current role safely (handles missing field)
+    function getCurrentRole() {
+      return resource.data.get('role', 'customer');
+    }
+    
+    // ==================== USERS COLLECTION ====================
+    
+    match /users/{userId} {
+      // Anyone authenticated can read user data (for profile viewing, worker discovery)
+      // Users can always read their own data, others can read if not banned
+      allow read: if isAuthenticated() && 
+                     (isOwner(userId) || !isBanned());
+      
+      // Users can only write their own data
+      allow create: if isAuthenticated() && 
+                       isOwner(userId) &&
+                       request.resource.data.role in ['customer', 'worker', 'admin'] &&
+                       !isBanned();
+      
+      // Users can update their own data
+      // Allow role change from 'customer' to 'worker' (for worker onboarding)
+      // Admins can update any user's data (for role changes, banning, etc.)
+      allow update: if isAuthenticated() && 
+                      // Check if user is banned (safely - only if their own document exists)
+                      (!exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
+                       !get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isBanned', false)) &&
+                      // Owner can update their own data OR admin can update any user
+                      ((isOwner(userId) &&
+                       // Allow if role doesn't change OR changing to worker from customer
+                       (request.resource.data.role == getCurrentRole() ||
+                        (request.resource.data.role == 'worker' && getCurrentRole() == 'customer'))) ||
+                      // Admins can update any user
+                      isAdmin());
+      
+      // Only admins can delete users
+      allow delete: if isAdmin();
+    }
+    
+    // ==================== BOOKINGS COLLECTION ====================
+    
+    match /bookings/{bookingId} {
+      // Customer and worker can read their own bookings
+      allow read: if isAuthenticated() && 
+                     !isBanned() &&
+                     (resource.data.customerId == request.auth.uid || 
+                      resource.data.workerId == request.auth.uid ||
+                      isAdmin());
+      
+      // Only customers can create bookings
+      // Must set customerId to their own ID
+      allow create: if isAuthenticated() && 
+                       !isBanned() &&
+                       (isCustomer() || isWorker() || isAdmin()) &&
+                       request.resource.data.customerId == request.auth.uid;
+      
+      // Customer and worker can update their bookings
+      // Customer can update: status to 'cancelled'
+      // Worker can update: status to 'accepted', 'rejected', 'in_progress', 'completed'
+      // Admins can update any booking
+      allow update: if isAuthenticated() && 
+                       !isBanned() &&
+                       (resource.data.customerId == request.auth.uid || 
+                        resource.data.workerId == request.auth.uid ||
+                        isAdmin()) &&
+                       // Prevent changing customerId or workerId
+                       request.resource.data.customerId == resource.data.customerId &&
+                       request.resource.data.workerId == resource.data.workerId;
+      
+      // Only customer can delete their own bookings (before accepted)
+      // Admins can delete any booking
+      allow delete: if isAuthenticated() && 
+                       !isBanned() &&
+                       ((resource.data.customerId == request.auth.uid && 
+                         resource.data.status in ['pending', 'cancelled']) ||
+                        isAdmin());
+    }
+    
+    // ==================== CHATS COLLECTION ====================
+    
+    match /chats/{chatId} {
+      // Only participants can read/write chat data
+      allow read, write: if isAuthenticated() && 
+                           !isBanned() &&
+                           request.auth.uid in resource.data.participants;
+      
+      // Allow creating chat if user is in participants
+      allow create: if isAuthenticated() && 
+                       !isBanned() &&
+                       request.auth.uid in request.resource.data.participants &&
+                       request.resource.data.participants.size() == 2;
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+        // Only participants can read/write messages
+        allow read, write: if isAuthenticated() && 
+                             !isBanned() &&
+                             request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        
+        // When creating message, senderId must match auth.uid
+        allow create: if isAuthenticated() && 
+                         !isBanned() &&
+                         request.resource.data.senderId == request.auth.uid &&
+                         request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+      }
+    }
+    
+    // ==================== REVIEWS COLLECTION ====================
+    
+    match /reviews/{reviewId} {
+      // Anyone authenticated can read reviews (for worker profiles)
+      allow read: if isAuthenticated() && !isBanned();
+      
+      // Only customers can create reviews
+      // reviewerId must match auth.uid
+      allow create: if isAuthenticated() && 
+                       !isBanned() &&
+                       (isCustomer() || isAdmin()) &&
+                       request.resource.data.reviewerId == request.auth.uid;
+      
+      // Only reviewer can update their own review
+      // Admins can update any review
+      allow update: if isAuthenticated() && 
+                        !isBanned() &&
+                        (resource.data.reviewerId == request.auth.uid || isAdmin());
+      
+      // Only reviewer or admin can delete
+      allow delete: if isAuthenticated() && 
+                       !isBanned() &&
+                       (resource.data.reviewerId == request.auth.uid || isAdmin());
+    }
+    
+    // ==================== REPORTS COLLECTION ====================
+    
+    match /reports/{reportId} {
+      // Reporter can read their own reports
+      // Admins can read all reports
+      allow read: if isAuthenticated() && 
+                     !isBanned() &&
+                     (resource.data.reporterId == request.auth.uid || isAdmin());
+      
+      // Anyone authenticated can create reports
+      // reporterId must match auth.uid
+      allow create: if isAuthenticated() && 
+                       !isBanned() &&
+                       request.resource.data.reporterId == request.auth.uid;
+      
+      // Only admins can update report status
+      allow update: if isAuthenticated() && 
+                       !isBanned() &&
+                       isAdmin();
+      
+      // Only admins can delete reports
+      allow delete: if isAuthenticated() && 
+                       !isBanned() &&
+                       isAdmin();
+    }
+    
+    // ==================== FAQs COLLECTION ====================
+    
+    match /faqs/{faqId} {
+      // Anyone authenticated can read FAQs
+      allow read: if isAuthenticated() && !isBanned();
+      
+      // Workers can create FAQs for themselves
+      // Admins can create FAQs for any worker
+      allow create: if isAuthenticated() && 
+                       !isBanned() &&
+                       ((isWorker() && request.resource.data.workerId == request.auth.uid) ||
+                        isAdmin());
+      
+      // Worker can update their own FAQs
+      // Admins can update any FAQ
+      allow update: if isAuthenticated() && 
+                       !isBanned() &&
+                       (resource.data.workerId == request.auth.uid || isAdmin());
+      
+      // Worker can delete their own FAQs
+      // Admins can delete any FAQ
+      allow delete: if isAuthenticated() && 
+                       !isBanned() &&
+                       (resource.data.workerId == request.auth.uid || isAdmin());
+    }
+    
+    // ==================== HISTORY COLLECTION ====================
+    
+    match /history/{historyId} {
+      // Users can only read their own history
+      // Admins can read all history
+      allow read: if isAuthenticated() && 
+                     !isBanned() &&
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Users can create their own history
+      // userId must match auth.uid
+      allow create: if isAuthenticated() && 
+                       !isBanned() &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Users can update their own history
+      // Admins can update any history
+      allow update: if isAuthenticated() && 
+                       !isBanned() &&
+                       (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Users can delete their own history
+      // Admins can delete any history
+      allow delete: if isAuthenticated() && 
+                       !isBanned() &&
+                       (resource.data.userId == request.auth.uid || isAdmin());
+    }
+    
+    // ==================== ICONS COLLECTION ====================
+    
+    match /icons/{iconId} {
+      // Public read access (for app icons)
+      allow read: if true;
+      
+      // Only admins can write icons
+      allow write: if isAuthenticated() && 
+                      !isBanned() &&
+                      isAdmin();
+    }
+  }
+}
+

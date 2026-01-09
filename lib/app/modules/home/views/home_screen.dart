@@ -7,6 +7,7 @@ import '../widgets/category_item.dart';
 import '../widgets/nav_icon_item.dart';
 import '../widgets/service_item.dart';
 import '../../../utils/responsive_helper.dart';
+import 'categories_screen.dart';
 
 // Conditional import for File (only on non-web platforms)
 // ignore: unused_import
@@ -40,12 +41,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return null;
   }
 
-  final List<Map<String, dynamic>> categories = [
-    {'name': 'Plumber', 'color': Colors.blue},
-    {'name': 'Carpenter', 'color': Colors.brown},
-    {'name': 'Welder', 'color': Colors.orange},
-    {'name': 'Electrician', 'color': Colors.yellow[700]!},
-  ];
+  // Use all categories from CategoriesScreen for scrolling
+  List<Map<String, dynamic>> get categories => CategoriesScreen.categories;
 
   final List<Map<String, dynamic>> services = [
     {'name': 'Plumber', 'color': Colors.blue},
@@ -659,61 +656,51 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: horizontalPadding,
-                  vertical: ResponsiveHelper.responsiveSpacing(
-                    context,
-                    mobile: 10,
-                    tablet: 12,
-                    desktop: 15,
-                  ),
+              // Horizontal scrolling categories - showing 3 at a time
+              SizedBox(
+                height: ResponsiveHelper.responsiveIconSize(
+                  context,
+                  mobile: 140,
+                  tablet: 160,
+                  desktop: 180,
                 ),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final itemsPerRow = ResponsiveHelper.itemsPerRow(
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                    vertical: ResponsiveHelper.responsiveSpacing(
                       context,
-                      mobile: 4,
-                      tablet: 4,
-                      desktop: 4,
-                    );
-                    final itemWidth =
-                        (constraints.maxWidth -
-                            (horizontalPadding * 2) -
-                            (ResponsiveHelper.responsiveSpacing(
-                                  context,
-                                  mobile: 8,
-                                  tablet: 12,
-                                  desktop: 16,
-                                ) *
-                                (itemsPerRow - 1))) /
-                        itemsPerRow;
-
-                    return Wrap(
-                      alignment: WrapAlignment.spaceEvenly,
-                      spacing: ResponsiveHelper.responsiveSpacing(
-                        context,
-                        mobile: 8,
-                        tablet: 12,
-                        desktop: 16,
+                      mobile: 10,
+                      tablet: 12,
+                      desktop: 15,
+                    ),
+                  ),
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    final itemWidth = (MediaQuery.of(context).size.width - 
+                        (horizontalPadding * 2) - 
+                        (ResponsiveHelper.responsiveSpacing(
+                          context,
+                          mobile: 16,
+                          tablet: 24,
+                          desktop: 32,
+                        ))) / 3; // Show 3 items at a time
+                    
+                    return Container(
+                      width: itemWidth,
+                      margin: EdgeInsets.only(
+                        right: ResponsiveHelper.responsiveSpacing(
+                          context,
+                          mobile: 8,
+                          tablet: 12,
+                          desktop: 16,
+                        ),
                       ),
-                      runSpacing: ResponsiveHelper.responsiveSpacing(
-                        context,
-                        mobile: 12,
-                        tablet: 16,
-                        desktop: 20,
+                      child: CategoryItem(
+                        name: category['name'] as String,
+                        color: category['color'] as Color,
                       ),
-                      children: categories.take(4).map((category) {
-                        return SizedBox(
-                          width: ResponsiveHelper.isMobile(context)
-                              ? null
-                              : itemWidth,
-                          child: CategoryItem(
-                            name: category['name'] as String,
-                            color: category['color'] as Color,
-                          ),
-                        );
-                      }).toList(),
                     );
                   },
                 ),

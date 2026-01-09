@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../home/views/home_screen.dart';
 import '../../home/views/categories_screen.dart';
+import '../../home/views/worker_home_screen.dart';
 import '../../search/views/search_screen.dart';
 import '../../profile/views/profile_screen.dart';
 import '../../profile/controllers/profile_controller.dart';
 import '../controllers/navigation_controller.dart';
+import '../controllers/role_controller.dart';
 import '../../../utils/responsive_helper.dart';
 
 class MainNavigationScreen extends StatelessWidget {
@@ -14,11 +16,19 @@ class MainNavigationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final NavigationController controller = Get.put(NavigationController());
+    final RoleController roleController = Get.put(RoleController());
     // Initialize ProfileController early so it's available throughout the app
     Get.put(ProfileController());
 
+    // Build screens based on user role
     final List<Widget> screens = [
-      const HomeScreen(),
+      // Home screen - different for workers vs customers
+      Obx(() {
+        if (roleController.isWorker.value) {
+          return const WorkerHomeScreen();
+        }
+        return const HomeScreen();
+      }),
       const CategoriesScreen(),
       const SearchScreen(),
       const ProfileScreen(),

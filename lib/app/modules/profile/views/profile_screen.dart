@@ -5,7 +5,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../controllers/profile_controller.dart';
 import '../../../utils/preferences_helper.dart';
 import '../../../services/image_service.dart';
+import '../../../services/admin_service.dart';
+import '../../../services/role_service.dart';
 import '../../auth/views/login_screen.dart';
+import '../../admin/views/admin_dashboard_screen.dart';
+import '../../worker_onboarding/views/worker_onboarding_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -250,6 +254,59 @@ class ProfileScreen extends StatelessWidget {
                         Get.toNamed('/settings');
                       },
                     ),
+                    // Become a Worker (only for customers)
+                    FutureBuilder<bool>(
+                      future: RoleService.isCustomer(),
+                      builder: (context, snapshot) {
+                        if (snapshot.data == true) {
+                          return Column(
+                            children: [
+                              const SizedBox(height: 20),
+                              Container(
+                                height: 1,
+                                color: Colors.grey[300],
+                                margin: const EdgeInsets.symmetric(vertical: 10),
+                              ),
+                              _buildMenuItem(
+                                icon: Icons.work_outline,
+                                title: 'Become a Worker',
+                                color: Colors.blue,
+                                onTap: () {
+                                  Get.to(() => const WorkerOnboardingScreen());
+                                },
+                              ),
+                            ],
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    // Admin Dashboard (only for admins)
+                    FutureBuilder<bool>(
+                      future: AdminService.isAdmin(),
+                      builder: (context, snapshot) {
+                        if (snapshot.data == true) {
+                          return Column(
+                            children: [
+                              const SizedBox(height: 20),
+                              Container(
+                                height: 1,
+                                color: Colors.grey[300],
+                                margin: const EdgeInsets.symmetric(vertical: 10),
+                              ),
+                              _buildMenuItem(
+                                icon: Icons.admin_panel_settings,
+                                title: 'Admin Dashboard',
+                                onTap: () {
+                                  Get.to(() => const AdminDashboardScreen());
+                                },
+                              ),
+                            ],
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
                     const SizedBox(height: 20),
                     _buildMenuItem(
                       icon: Icons.logout,
@@ -314,6 +371,7 @@ class ProfileScreen extends StatelessWidget {
     required String title,
     required VoidCallback onTap,
     bool isDestructive = false,
+    Color? color,
   }) {
     return Material(
       color: Colors.transparent,

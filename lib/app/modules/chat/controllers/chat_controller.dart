@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../services/notification_service.dart';
 
 class ChatController extends GetxController {
   final String otherUserId;
@@ -101,6 +102,15 @@ class ChatController extends GetxController {
         'read': false,
       });
 
+      // Send notification to recipient
+      await _sendChatNotification(otherUserId, messageText);
+      
+      // Track chat message sent
+      await AnalyticsService.logChatMessageSent(
+        chatId: chatId,
+        recipientId: otherUserId,
+      );
+
       // Clear input
       messageController.clear();
     } catch (e) {
@@ -135,6 +145,24 @@ class ChatController extends GetxController {
       }
     } catch (e) {
       debugPrint('Error marking messages as read: $e');
+    }
+  }
+
+  /// Send notification when a new message is sent
+  Future<void> _sendChatNotification(String recipientId, String message) async {
+    try {
+      await NotificationService.sendNotificationToUser(
+        userId: recipientId,
+        title: otherUserName,
+        body: message,
+        type: 'chat_message',
+        data: {
+          'workerId': otherUserId,
+          'workerName': otherUserName,
+        },
+      );
+    } catch (e) {
+      debugPrint('Error sending chat notification: $e');
     }
   }
 }

@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../utils/icon_helper.dart';
+import '../../../services/firestore_service.dart';
+import '../../../services/role_service.dart';
+import '../../../services/auth_service.dart';
 
-class BookingDetailScreen extends StatelessWidget {
+class BookingDetailScreen extends StatefulWidget {
   final Map<String, dynamic> booking;
 
   const BookingDetailScreen({
@@ -12,31 +15,75 @@ class BookingDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<BookingDetailScreen> createState() => _BookingDetailScreenState();
+}
+
+class _BookingDetailScreenState extends State<BookingDetailScreen> {
+  String? currentUserId;
+  String? userRole;
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    currentUserId = AuthService.currentUserId;
+    _loadUserRole();
+  }
+
+  Future<void> _loadUserRole() async {
+    final role = await RoleService.getCurrentUserRole();
+    setState(() {
+      userRole = role;
+    });
+  }
+
+  bool get isWorker => userRole == 'worker';
+  bool get isCustomer => userRole == 'customer';
+  bool get isAssignedWorker => currentUserId != null && 
+                                widget.booking['workerId'] == currentUserId;
+
+  @override
   Widget build(BuildContext context) {
     Color statusColor;
     IconData statusIcon;
     String statusText;
 
-    switch (booking['status']) {
-      case 'upcoming':
-        statusColor = Colors.blue;
-        statusIcon = Icons.schedule;
-        statusText = 'Upcoming';
-        break;
-      case 'ongoing':
+    final status = widget.booking['status'] ?? 'pending';
+    switch (status) {
+      case 'pending':
         statusColor = Colors.orange;
+        statusIcon = Icons.pending;
+        statusText = 'Pending';
+        break;
+      case 'accepted':
+        statusColor = Colors.blue;
+        statusIcon = Icons.check_circle_outline;
+        statusText = 'Accepted';
+        break;
+      case 'rejected':
+        statusColor = Colors.red;
+        statusIcon = Icons.cancel;
+        statusText = 'Rejected';
+        break;
+      case 'in_progress':
+        statusColor = Colors.purple;
         statusIcon = Icons.work;
-        statusText = 'Ongoing';
+        statusText = 'In Progress';
         break;
       case 'completed':
         statusColor = const Color(0xFF4CAF50);
         statusIcon = Icons.check_circle;
         statusText = 'Completed';
         break;
-      default:
+      case 'cancelled':
         statusColor = Colors.grey;
         statusIcon = Icons.cancel;
         statusText = 'Cancelled';
+        break;
+      default:
+        statusColor = Colors.grey;
+        statusIcon = Icons.help_outline;
+        statusText = status;
     }
 
     return Scaffold(
@@ -174,7 +221,7 @@ class BookingDetailScreen extends StatelessWidget {
                                   color: Colors.grey[200],
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: _buildServiceIcon(booking['serviceName'] as String),
+                                child: _buildServiceIcon(widget.booking['serviceName']?.toString() ?? 'Service'),
                               ),
                               const SizedBox(width: 16),
                               Expanded(
@@ -182,7 +229,7 @@ class BookingDetailScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      booking['serviceName'],
+                                      widget.booking['serviceName']?.toString() ?? 'Service',
                                       style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
@@ -208,22 +255,24 @@ class BookingDetailScreen extends StatelessWidget {
                           _buildDetailRow(
                             Icons.person,
                             'Provider',
-                            booking['providerName'],
+                            widget.booking['providerName']?.toString() ?? 'Service Provider',
                           ),
                           const SizedBox(height: 12),
-                          // Chat button
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                final providerName = booking['providerName']?.toString() ?? 'Service Provider';
-                                final workerId = providerName.toLowerCase().replaceAll(' ', '_');
-                                
-                                Get.toNamed('/chat', arguments: {
-                                  'workerId': workerId,
-                                  'workerName': providerName,
-                                });
-                              },
+                          // Chat button (only if worker is assigned)
+                          if (widget.booking['workerId'] != null && 
+                              widget.booking['workerId'].toString().isNotEmpty)
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  final workerId = widget.booking['workerId']?.toString() ?? '';
+                                  final providerName = widget.booking['providerName']?.toString() ?? 'Service Provider';
+                                  
+                                  Get.toNamed('/chat', arguments: {
+                                    'workerId': workerId,
+                                    'workerName': providerName,
+                                  });
+                                },
                               borderRadius: BorderRadius.circular(12),
                               child: Container(
                                 padding: const EdgeInsets.all(12),
@@ -261,19 +310,19 @@ class BookingDetailScreen extends StatelessWidget {
                           _buildDetailRow(
                             Icons.calendar_today,
                             'Date',
-                            booking['date'],
+                            widget.booking['date']?.toString() ?? 'Not set',
                           ),
                           const SizedBox(height: 12),
                           _buildDetailRow(
                             Icons.access_time,
                             'Time',
-                            booking['time'],
+                            widget.booking['time']?.toString() ?? 'Not set',
                           ),
                           const SizedBox(height: 12),
                           _buildDetailRow(
                             Icons.location_on,
                             'Address',
-                            booking['address'],
+                            widget.booking['address']?.toString() ?? 'Not set',
                           ),
                         ],
                       ),
@@ -313,7 +362,7 @@ class BookingDetailScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                'PKR ${booking['amount']}',
+                                'PKR ${(widget.booking['amount'] as num? ?? 0).toStringAsFixed(0)}',
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -341,105 +390,8 @@ class BookingDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
 
-                    // Actions
-                    if (booking['status'] == 'upcoming')
-                      Column(
-                        children: [
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                // Cancel booking
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text('Cancel Booking'),
-                                    content: const Text(
-                                      'Are you sure you want to cancel this booking?',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: const Text('No'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          Get.back();
-                                          // Handle cancellation
-                                        },
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.red,
-                                        ),
-                                        child: const Text('Yes, Cancel'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                              borderRadius: BorderRadius.circular(16),
-                              child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                decoration: BoxDecoration(
-                                  color: Colors.red.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.red.withValues(alpha: 0.3),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Cancel Booking',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    if (booking['status'] == 'completed')
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            // Rate service - generate workerId from providerName
-                            final providerName = booking['providerName']?.toString() ?? '';
-                            final workerId = providerName.toLowerCase().replaceAll(' ', '_');
-                            
-                            Get.toNamed('/review', arguments: {
-                              ...booking,
-                              'workerId': workerId,
-                              'providerId': workerId,
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Text(
-                              'Rate Service',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                    // Actions based on role and status
+                    _buildActionButtons(),
                     const SizedBox(height: 30),
                   ],
                 ),
@@ -496,6 +448,297 @@ class BookingDetailScreen extends StatelessWidget {
       color: const Color(0xFF4A5C7A),
       size: 30,
     );
+  }
+
+  Widget _buildActionButtons() {
+    final status = widget.booking['status'] ?? 'pending';
+
+    // Worker actions
+    if (isWorker && isAssignedWorker) {
+      if (status == 'pending') {
+        return Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : () => _rejectBooking(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text('Reject'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : () => _acceptBooking(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4CAF50),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text('Accept'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      } else if (status == 'accepted') {
+        return ElevatedButton(
+          onPressed: isLoading ? null : () => _startBooking(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.purple,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            minimumSize: const Size(double.infinity, 50),
+          ),
+          child: isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Text('Start Service'),
+        );
+      } else if (status == 'in_progress') {
+        return ElevatedButton(
+          onPressed: isLoading ? null : () => _completeBooking(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF4CAF50),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            minimumSize: const Size(double.infinity, 50),
+          ),
+          child: isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Text('Complete Service'),
+        );
+      }
+    }
+
+    // Customer actions
+    if (isCustomer && widget.booking['customerId'] == currentUserId) {
+      if (status == 'pending' || status == 'accepted') {
+        return ElevatedButton(
+          onPressed: isLoading ? null : () => _cancelBooking(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            minimumSize: const Size(double.infinity, 50),
+          ),
+          child: isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Text('Cancel Booking'),
+        );
+      } else if (status == 'completed') {
+        return ElevatedButton(
+          onPressed: () {
+            final workerId = widget.booking['workerId']?.toString() ?? '';
+            Get.toNamed('/review', arguments: {
+              ...widget.booking,
+              'workerId': workerId,
+              'providerId': workerId,
+            });
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF4CAF50),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            minimumSize: const Size(double.infinity, 50),
+          ),
+          child: const Text('Rate Service'),
+        );
+      }
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  Future<void> _acceptBooking() async {
+    setState(() => isLoading = true);
+    try {
+      await FirestoreService.acceptBooking(widget.booking['id']);
+      Get.snackbar(
+        'Success',
+        'Booking accepted successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF4CAF50),
+        colorText: Colors.white,
+      );
+      Get.back();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to accept booking: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _rejectBooking() async {
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Reject Booking'),
+        content: const Text('Are you sure you want to reject this booking?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Reject'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => isLoading = true);
+      try {
+        await FirestoreService.rejectBooking(widget.booking['id']);
+        Get.snackbar(
+          'Success',
+          'Booking rejected',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        Get.back();
+      } catch (e) {
+        Get.snackbar(
+          'Error',
+          'Failed to reject booking: $e',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      } finally {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _startBooking() async {
+    setState(() => isLoading = true);
+    try {
+      await FirestoreService.startBooking(widget.booking['id']);
+      Get.snackbar(
+        'Success',
+        'Service started',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.purple,
+        colorText: Colors.white,
+      );
+      Get.back();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to start booking: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _completeBooking() async {
+    setState(() => isLoading = true);
+    try {
+      await FirestoreService.completeBooking(widget.booking['id']);
+      Get.snackbar(
+        'Success',
+        'Booking completed successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF4CAF50),
+        colorText: Colors.white,
+      );
+      Get.back();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to complete booking: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _cancelBooking() async {
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Cancel Booking'),
+        content: const Text('Are you sure you want to cancel this booking?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Yes, Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => isLoading = true);
+      try {
+        await FirestoreService.cancelBooking(widget.booking['id']);
+        Get.snackbar(
+          'Success',
+          'Booking cancelled',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        Get.back();
+      } catch (e) {
+        Get.snackbar(
+          'Error',
+          'Failed to cancel booking: $e',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      } finally {
+        setState(() => isLoading = false);
+      }
+    }
   }
 }
 
