@@ -265,8 +265,68 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   }
 
                   if (snapshot.hasError) {
+                    final error = snapshot.error;
+                    final errorString = error.toString();
+                    debugPrint('=== NOTIFICATIONS ERROR ===');
+                    debugPrint('Error type: ${error.runtimeType}');
+                    debugPrint('Error message: $errorString');
+                    debugPrint('Current User ID: $currentUserId');
+                    debugPrint('===========================');
+                    
+                    // Check if it's a permission error
+                    final isPermissionError = errorString.contains('permission-denied') || 
+                                             errorString.contains('permission denied');
+                    
                     return Center(
-                      child: Text('Error: ${snapshot.error}'),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 64,
+                              color: Colors.red[300],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              isPermissionError 
+                                ? 'Permission Denied' 
+                                : 'Error loading notifications',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              isPermissionError
+                                ? 'You don\'t have permission to view notifications.\nPlease check your account status.'
+                                : errorString,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            if (isPermissionError) ...[
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  // Try to refresh
+                                  setState(() {});
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF4CAF50),
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                     );
                   }
 

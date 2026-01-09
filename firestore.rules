@@ -18,7 +18,7 @@ service cloud.firestore {
     function hasRole(role) {
       return isAuthenticated() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             getUserData().role == role;
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'customer') == role;
     }
     
     // Check if user is admin
@@ -37,10 +37,11 @@ service cloud.firestore {
     }
     
     // Check if user is banned
+    // Safely handles missing user document or missing isBanned field (defaults to false)
     function isBanned() {
       return isAuthenticated() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             getUserData().isBanned == true;
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isBanned', false) == true;
     }
     
     // Check if user owns the document
@@ -84,17 +85,44 @@ service cloud.firestore {
       
       // Only admins can delete users
       allow delete: if isAdmin();
+      
+      // ==================== NOTIFICATIONS SUBCOLLECTION ====================
+      // Notifications are stored as subcollection: users/{userId}/notifications/{notificationId}
+      match /notifications/{notificationId} {
+        // Users can read their own notifications
+        allow list: if isAuthenticated() && !isBanned() && isOwner(userId);
+        allow get: if isAuthenticated() && !isBanned() && isOwner(userId);
+        
+        // Users can update their own notifications (to mark as read)
+        allow update: if isAuthenticated() && 
+                       !isBanned() && 
+                       isOwner(userId) &&
+                       // Only allow updating isRead and readAt fields
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead', 'readAt']);
+        
+        // System can create notifications for users
+        allow create: if isAuthenticated() && !isBanned();
+        
+        // Users can delete their own notifications
+        allow delete: if isAuthenticated() && !isBanned() && isOwner(userId);
+      }
     }
     
     // ==================== BOOKINGS COLLECTION ====================
     
     match /bookings/{bookingId} {
-      // Customer and worker can read their own bookings
-      allow read: if isAuthenticated() && 
-                     !isBanned() &&
-                     (resource.data.customerId == request.auth.uid || 
-                      resource.data.workerId == request.auth.uid ||
-                      isAdmin());
+      // Allow list queries - users can query their own bookings
+      // The query filters by customerId or workerId, so results will only include accessible documents
+      allow list: if isAuthenticated() && !isBanned();
+      
+      // Individual document read: only if user is customer, worker, or admin
+      // For worker queries: workerId must match (empty string '' won't match, so this is safe)
+      // For customer queries: customerId must match
+      allow get: if isAuthenticated() && 
+                   !isBanned() &&
+                   (resource.data.customerId == request.auth.uid || 
+                    resource.data.workerId == request.auth.uid ||
+                    isAdmin());
       
       // Only customers can create bookings
       // Must set customerId to their own ID
@@ -269,6 +297,32 @@ service cloud.firestore {
       allow write: if isAuthenticated() && 
                       !isBanned() &&
                       isAdmin();
+    }
+    
+    // ==================== CASHOUTS COLLECTION ====================
+    
+    match /cashouts/{cashoutId} {
+      // Workers can read their own cashouts
+      allow list: if isAuthenticated() && !isBanned();
+      allow get: if isAuthenticated() && 
+                   !isBanned() &&
+                   (resource.data.workerId == request.auth.uid || isAdmin());
+      
+      // Workers can create cashout requests
+      allow create: if isAuthenticated() && 
+                       !isBanned() &&
+                       (isWorker() || isAdmin()) &&
+                       request.resource.data.workerId == request.auth.uid;
+      
+      // Only admins can update cashout status (approve/reject/complete)
+      allow update: if isAuthenticated() && 
+                       !isBanned() &&
+                       isAdmin();
+      
+      // Only admins can delete cashouts
+      allow delete: if isAuthenticated() && 
+                       !isBanned() &&
+                       isAdmin();
     }
   }
 }

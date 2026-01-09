@@ -6,6 +6,7 @@ class NavIconItem extends StatelessWidget {
   final String label;
   final bool isSelected;
   final String? route;
+  final VoidCallback? onTap;
 
   const NavIconItem({
     super.key,
@@ -13,6 +14,7 @@ class NavIconItem extends StatelessWidget {
     required this.label,
     this.isSelected = false,
     this.route,
+    this.onTap,
   });
 
   @override
@@ -20,11 +22,11 @@ class NavIconItem extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: route != null
+        onTap: onTap ?? (route != null
             ? () {
                 Get.toNamed(route!);
               }
-            : null,
+            : null),
         borderRadius: BorderRadius.circular(14),
         child: Container(
           width: 75,

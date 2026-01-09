@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import '../controllers/worker_onboarding_controller.dart';
-import '../../../utils/responsive_helper.dart';
 import '../../home/views/categories_screen.dart';
 
 /// Multi-step worker onboarding screen

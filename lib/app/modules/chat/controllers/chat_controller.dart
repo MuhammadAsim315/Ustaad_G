@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../services/notification_service.dart';
+import '../../../services/analytics_service.dart';
 
 class ChatController extends GetxController {
   final String otherUserId;

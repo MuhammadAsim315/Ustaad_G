@@ -511,7 +511,7 @@ class ServiceDetailScreen extends StatelessWidget {
                                 min: 0.0,
                                 max: 5.0,
                                 divisions: 10,
-                                label: tempMinRating != null ? '${tempMinRating!.toStringAsFixed(1)}' : 'Any',
+                                label: tempMinRating != null ? tempMinRating!.toStringAsFixed(1) : 'Any',
                                 onChanged: (value) {
                                   setState(() => tempMinRating = value);
                                 },
@@ -525,7 +525,7 @@ class ServiceDetailScreen extends StatelessWidget {
                                     },
                                     child: const Text('Clear'),
                                   ),
-                                  Text('${(tempMinRating ?? 0.0).toStringAsFixed(1)}'),
+                                  Text((tempMinRating ?? 0.0).toStringAsFixed(1)),
                                 ],
                               ),
                             ],
@@ -585,37 +585,33 @@ class ServiceDetailScreen extends StatelessWidget {
                         builder: (context, setState) {
                           return Column(
                             children: [
-                              RadioListTile<String>(
-                                title: const Text('Rating'),
-                                value: 'rating',
+                              RadioGroup<String>(
                                 groupValue: tempSortBy,
                                 onChanged: (value) {
-                                  setState(() => tempSortBy = value!);
+                                  if (value != null) {
+                                    setState(() => tempSortBy = value);
+                                  }
                                 },
-                              ),
-                              RadioListTile<String>(
-                                title: const Text('Price'),
-                                value: 'price',
-                                groupValue: tempSortBy,
-                                onChanged: (value) {
-                                  setState(() => tempSortBy = value!);
-                                },
-                              ),
-                              RadioListTile<String>(
-                                title: const Text('Reviews'),
-                                value: 'reviews',
-                                groupValue: tempSortBy,
-                                onChanged: (value) {
-                                  setState(() => tempSortBy = value!);
-                                },
-                              ),
-                              RadioListTile<String>(
-                                title: const Text('Experience'),
-                                value: 'experience',
-                                groupValue: tempSortBy,
-                                onChanged: (value) {
-                                  setState(() => tempSortBy = value!);
-                                },
+                                child: Column(
+                                  children: [
+                                    const RadioListTile<String>(
+                                      title: Text('Rating'),
+                                      value: 'rating',
+                                    ),
+                                    const RadioListTile<String>(
+                                      title: Text('Price'),
+                                      value: 'price',
+                                    ),
+                                    const RadioListTile<String>(
+                                      title: Text('Reviews'),
+                                      value: 'reviews',
+                                    ),
+                                    const RadioListTile<String>(
+                                      title: Text('Experience'),
+                                      value: 'experience',
+                                    ),
+                                  ],
+                                ),
                               ),
                               const SizedBox(height: 8),
                               SwitchListTile(

@@ -34,7 +34,7 @@ class AnalyticsService {
   /// Log a custom event
   static Future<void> logEvent({
     required String name,
-    Map<String, dynamic>? parameters,
+    Map<String, Object>? parameters,
   }) async {
     try {
       await _analytics.logEvent(
@@ -78,7 +78,7 @@ class AnalyticsService {
   }) async {
     await logEvent(
       name: 'sign_up',
-      parameters: {
+      parameters: <String, Object>{
         'method': method,
         if (userId != null) 'user_id': userId,
       },
@@ -92,7 +92,7 @@ class AnalyticsService {
   }) async {
     await logEvent(
       name: 'login',
-      parameters: {
+      parameters: <String, Object>{
         'method': method,
         if (userId != null) 'user_id': userId,
       },
@@ -108,7 +108,7 @@ class AnalyticsService {
   }) async {
     await logEvent(
       name: 'booking_created',
-      parameters: {
+      parameters: <String, Object>{
         'booking_id': bookingId,
         'service_name': serviceName,
         'amount': amount,
@@ -127,7 +127,7 @@ class AnalyticsService {
   }) async {
     await logEvent(
       name: 'booking_status_changed',
-      parameters: {
+      parameters: <String, Object>{
         'booking_id': bookingId,
         'old_status': oldStatus,
         'new_status': newStatus,
@@ -144,7 +144,7 @@ class AnalyticsService {
   }) async {
     await logEvent(
       name: 'booking_completed',
-      parameters: {
+      parameters: <String, Object>{
         'booking_id': bookingId,
         'service_name': serviceName,
         'amount': amount,
@@ -161,7 +161,7 @@ class AnalyticsService {
   }) async {
     await logEvent(
       name: 'worker_registered',
-      parameters: {
+      parameters: <String, Object>{
         'user_id': userId,
         'services_count': services.length,
         'services': services.join(', '),
@@ -191,7 +191,7 @@ class AnalyticsService {
   }) async {
     await logEvent(
       name: 'view_item',
-      parameters: {
+      parameters: <String, Object>{
         'item_id': workerId,
         'item_name': workerName,
         'item_category': 'worker',
@@ -207,7 +207,7 @@ class AnalyticsService {
   }) async {
     await logEvent(
       name: 'review_submitted',
-      parameters: {
+      parameters: <String, Object>{
         'worker_id': workerId,
         'rating': rating,
         'booking_id': bookingId,
@@ -222,7 +222,7 @@ class AnalyticsService {
   }) async {
     await logEvent(
       name: 'chat_message_sent',
-      parameters: {
+      parameters: <String, Object>{
         'chat_id': chatId,
         'recipient_id': recipientId,
       },

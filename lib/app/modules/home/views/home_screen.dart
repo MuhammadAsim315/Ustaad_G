@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import '../../root/controllers/navigation_controller.dart';
 import '../../profile/controllers/profile_controller.dart';
 import '../widgets/category_item.dart';
 import '../widgets/nav_icon_item.dart';
-import '../widgets/service_item.dart';
 import '../../../utils/responsive_helper.dart';
+import '../../../services/firestore_service.dart';
 import 'categories_screen.dart';
+import '../../bookings/views/my_bookings_screen.dart';
 
 // Conditional import for File (only on non-web platforms)
 // ignore: unused_import
@@ -43,13 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Use all categories from CategoriesScreen for scrolling
   List<Map<String, dynamic>> get categories => CategoriesScreen.categories;
-
-  final List<Map<String, dynamic>> services = [
-    {'name': 'Plumber', 'color': Colors.blue},
-    {'name': 'Carpenter', 'color': Colors.brown},
-    {'name': 'Welder', 'color': Colors.orange},
-    {'name': 'Electrician', 'color': Colors.yellow[700]!},
-  ];
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
@@ -542,16 +538,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       isSelected: true,
                     ),
                     NavIconItem(
-                      icon: Icons.build,
-                      label: 'My Services',
+                      icon: Icons.book_online,
+                      label: 'My Bookings',
                       isSelected: false,
-                      route: '/my-services',
+                      onTap: () => Get.to(() => const MyBookingsScreen()),
                     ),
                     NavIconItem(
-                      icon: Icons.attach_money,
-                      label: 'Earnings',
+                      icon: Icons.help_outline,
+                      label: 'Help',
                       isSelected: false,
-                      route: '/earnings',
+                      route: '/help-support',
                     ),
                   ],
                 );
@@ -706,130 +702,116 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // Services you may need section
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: horizontalPadding,
-                  vertical: ResponsiveHelper.responsiveSpacing(
-                    context,
-                    mobile: 20,
-                    tablet: 24,
-                    desktop: 28,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Services you may need',
-                      style: TextStyle(
-                        fontSize: ResponsiveHelper.responsiveFontSize(
-                          context,
-                          mobile: 22,
-                          tablet: 24,
-                          desktop: 26,
-                        ),
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          // Navigate to categories tab
-                          Get.find<NavigationController>().changePage(1);
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Text(
-                                'See all',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF4CAF50),
-                                ),
-                              ),
-                              SizedBox(width: 4),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                size: 12,
-                                color: Color(0xFF4CAF50),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              SizedBox(
+                height: ResponsiveHelper.responsiveSpacing(
+                  context,
+                  mobile: 20,
+                  tablet: 24,
+                  desktop: 28,
                 ),
               ),
 
+              // Recent Bookings Section (Customer-focused)
               Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: horizontalPadding,
                   vertical: ResponsiveHelper.responsiveSpacing(
                     context,
-                    mobile: 10,
-                    tablet: 12,
-                    desktop: 15,
+                    mobile: 12,
+                    tablet: 16,
+                    desktop: 20,
                   ),
                 ),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final itemsPerRow = ResponsiveHelper.itemsPerRow(
-                      context,
-                      mobile: 4,
-                      tablet: 4,
-                      desktop: 4,
-                    );
-                    final itemWidth =
-                        (constraints.maxWidth -
-                            (horizontalPadding * 2) -
-                            (ResponsiveHelper.responsiveSpacing(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'My Bookings',
+                              style: TextStyle(
+                                fontSize: ResponsiveHelper.responsiveFontSize(
                                   context,
-                                  mobile: 8,
-                                  tablet: 12,
-                                  desktop: 16,
-                                ) *
-                                (itemsPerRow - 1))) /
-                        itemsPerRow;
-
-                    return Wrap(
-                      alignment: WrapAlignment.spaceEvenly,
-                      spacing: ResponsiveHelper.responsiveSpacing(
-                        context,
-                        mobile: 8,
-                        tablet: 12,
-                        desktop: 16,
-                      ),
-                      runSpacing: ResponsiveHelper.responsiveSpacing(
+                                  mobile: 22,
+                                  tablet: 24,
+                                  desktop: 26,
+                                ),
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            SizedBox(
+                              height: ResponsiveHelper.responsiveSpacing(
+                                context,
+                                mobile: 4,
+                                tablet: 6,
+                                desktop: 8,
+                              ),
+                            ),
+                            Text(
+                              'Track your service requests',
+                              style: TextStyle(
+                                fontSize: ResponsiveHelper.responsiveFontSize(
+                                  context,
+                                  mobile: 13,
+                                  tablet: 14,
+                                  desktop: 15,
+                                ),
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => Get.to(() => const MyBookingsScreen()),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Text(
+                                    'View All',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF4CAF50),
+                                    ),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 12,
+                                    color: Color(0xFF4CAF50),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: ResponsiveHelper.responsiveSpacing(
                         context,
                         mobile: 12,
                         tablet: 16,
                         desktop: 20,
                       ),
-                      children: services.take(4).map((service) {
-                        return SizedBox(
-                          width: ResponsiveHelper.isMobile(context)
-                              ? null
-                              : itemWidth,
-                          child: ServiceItem(
-                            name: service['name'] as String,
-                            color: service['color'] as Color,
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  },
+                    ),
+                    _buildRecentBookingsSection(horizontalPadding),
+                  ],
                 ),
               ),
 
@@ -844,6 +826,252 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRecentBookingsSection(double horizontalPadding) {
+    final userId = FirestoreService.currentUserId;
+    
+    if (userId == null) {
+      return Container(
+        padding: const EdgeInsets.all(40),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.book_online_outlined,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No bookings yet',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Book a service to get started',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirestoreService.getUserBookings(userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+              ),
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Error: ${snapshot.error}'),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.book_online_outlined,
+                  size: 64,
+                  color: Colors.grey[400],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'No bookings yet',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Book a service to get started',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[500],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
+
+        final bookings = snapshot.data!.docs.take(3).toList();
+
+        return Column(
+          children: bookings.map((doc) {
+            final booking = doc.data() as Map<String, dynamic>;
+            return _buildBookingCard(doc.id, booking);
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildBookingCard(String bookingId, Map<String, dynamic> booking) {
+    final serviceName = booking['serviceName'] ?? 'Unknown Service';
+    final status = booking['status'] ?? 'pending';
+    final amount = (booking['amount'] as num? ?? 0).toDouble();
+    final date = booking['date'] as Timestamp?;
+
+    Color statusColor;
+    String statusText;
+    IconData statusIcon;
+    switch (status) {
+      case 'pending':
+        statusColor = Colors.orange;
+        statusText = 'Pending';
+        statusIcon = Icons.pending_actions_rounded;
+        break;
+      case 'accepted':
+        statusColor = Colors.blue;
+        statusText = 'Accepted';
+        statusIcon = Icons.check_circle_rounded;
+        break;
+      case 'in_progress':
+        statusColor = Colors.purple;
+        statusText = 'In Progress';
+        statusIcon = Icons.work_rounded;
+        break;
+      case 'completed':
+        statusColor = Colors.green;
+        statusText = 'Completed';
+        statusIcon = Icons.check_circle_outline_rounded;
+        break;
+      case 'cancelled':
+        statusColor = Colors.red;
+        statusText = 'Cancelled';
+        statusIcon = Icons.cancel_rounded;
+        break;
+      default:
+        statusColor = Colors.grey;
+        statusText = status;
+        statusIcon = Icons.help_outline_rounded;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => Get.toNamed('/my-bookings'),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    statusIcon,
+                    color: statusColor,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        serviceName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      if (date != null)
+                        Text(
+                          DateFormat('MMM dd, yyyy • hh:mm a').format(date.toDate()),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        statusText,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: statusColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'PKR ${NumberFormat('#,##0').format(amount)}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

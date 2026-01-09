@@ -19,6 +19,7 @@ class FirestoreService {
   static const String _faqsCollection = 'faqs';
   static const String _reportsCollection = 'reports';
   static const String _notificationsCollection = 'notifications';
+  static const String _cashoutsCollection = 'cashouts';
 
   /// Get current user ID
   static String? get currentUserId => _auth.currentUser?.uid;
@@ -491,12 +492,20 @@ class FirestoreService {
   /// Get worker bookings (bookings assigned to a worker)
   /// Requires composite index: bookings: workerId (Ascending), createdAt (Descending)
   static Stream<QuerySnapshot> getWorkerBookings(String workerId) {
-    return _firestore
-        .collection(_bookingsCollection)
-        .where('workerId', isEqualTo: workerId)
-        .orderBy('createdAt', descending: true)
-        .limit(50) // Add limit for pagination
-        .snapshots();
+    debugPrint('FirestoreService: getWorkerBookings called with workerId: $workerId');
+    try {
+      final query = _firestore
+          .collection(_bookingsCollection)
+          .where('workerId', isEqualTo: workerId)
+          .orderBy('createdAt', descending: true)
+          .limit(50); // Add limit for pagination
+      
+      debugPrint('FirestoreService: Query created successfully');
+      return query.snapshots();
+    } catch (e) {
+      debugPrint('FirestoreService: Error creating query: $e');
+      rethrow;
+    }
   }
 
   /// Get worker bookings by status
@@ -661,7 +670,6 @@ class FirestoreService {
   }) async {
     try {
       final serviceName = bookingData['serviceName'] ?? 'service';
-      final amount = (bookingData['amount'] as num? ?? 0).toDouble();
       
       String title;
       String body;
@@ -872,12 +880,15 @@ class FirestoreService {
       
       // Map to worker data
       List<Map<String, dynamic>> workers = snapshot.docs.map((doc) {
-        final data = doc.data();
-        return {
+        final data = doc.data() as Map<String, dynamic>?;
+        final result = <String, dynamic>{
           'id': doc.id,
-          ...data,
           '_documentSnapshot': doc, // Store for pagination
         };
+        if (data != null) {
+          result.addAll(data);
+        }
+        return result;
       }).toList();
       
       // Apply in-memory filters (for fields that can't be queried directly)
@@ -1304,6 +1315,54 @@ class FirestoreService {
       debugPrint('Error getting booking: $e');
       return null;
     }
+  }
+
+  /// ==================== CASHOUTS ====================
+
+  /// Request cashout
+  static Future<String> requestCashout({
+    required String workerId,
+    required double amount,
+    required String accountNumber,
+    required String accountName,
+  }) async {
+    try {
+      final docRef = await _firestore.collection(_cashoutsCollection).add({
+        'workerId': workerId,
+        'amount': amount,
+        'accountNumber': accountNumber,
+        'accountName': accountName,
+        'status': 'pending', // pending, approved, completed, rejected
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      return docRef.id;
+    } catch (e) {
+      throw Exception('Failed to request cashout: $e');
+    }
+  }
+
+  /// Get worker cashouts
+  /// Requires composite index: cashouts: workerId (Ascending), createdAt (Descending)
+  static Stream<QuerySnapshot> getWorkerCashouts(String workerId) {
+    return _firestore
+        .collection(_cashoutsCollection)
+        .where('workerId', isEqualTo: workerId)
+        .orderBy('createdAt', descending: true)
+        .limit(50)
+        .snapshots();
+  }
+
+  /// Get worker cashouts by status
+  /// Requires composite index: cashouts: workerId (Ascending), status (Ascending), createdAt (Descending)
+  static Stream<QuerySnapshot> getWorkerCashoutsByStatus(String workerId, String status) {
+    return _firestore
+        .collection(_cashoutsCollection)
+        .where('workerId', isEqualTo: workerId)
+        .where('status', isEqualTo: status)
+        .orderBy('createdAt', descending: true)
+        .limit(50)
+        .snapshots();
   }
 }
 

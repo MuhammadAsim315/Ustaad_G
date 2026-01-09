@@ -216,6 +216,7 @@ class CheckoutScreen extends StatelessWidget {
                         userId: user.uid,
                         serviceName: serviceName,
                         serviceSvgPath: serviceSvgPath,
+                        // ignore: deprecated_member_use
                         serviceColorValue: serviceColor.value,
                         providerName: workerName ?? 'Service Provider',
                         date: date,

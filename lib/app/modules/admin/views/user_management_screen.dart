@@ -242,36 +242,42 @@ class UserManagementScreen extends StatelessWidget {
           children: [
             const Text('Select new role:'),
             const SizedBox(height: 16),
-            ...['customer', 'worker', 'admin'].map((role) {
-              return RadioListTile<String>(
-                title: Text(role.toUpperCase()),
-                value: role,
-                groupValue: currentRole,
-                onChanged: (value) async {
-                  if (value != null) {
-                    Navigator.pop(context);
-                    try {
-                      await AdminService.setUserRole(userId, value);
-                      Get.snackbar(
-                        'Success',
-                        'User role updated to ${value.toUpperCase()}',
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: const Color(0xFF4CAF50),
-                        colorText: Colors.white,
-                      );
-                    } catch (e) {
-                      Get.snackbar(
-                        'Error',
-                        'Failed to update role: $e',
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: Colors.red,
-                        colorText: Colors.white,
-                      );
-                    }
+            RadioGroup<String>(
+              groupValue: currentRole,
+              onChanged: (value) async {
+                if (value != null) {
+                  Navigator.pop(context);
+                  try {
+                    await AdminService.setUserRole(userId, value);
+                    Get.snackbar(
+                      'Success',
+                      'User role updated to ${value.toUpperCase()}',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: const Color(0xFF4CAF50),
+                      colorText: Colors.white,
+                    );
+                  } catch (e) {
+                    Get.snackbar(
+                      'Error',
+                      'Failed to update role: $e',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.red,
+                      colorText: Colors.white,
+                    );
                   }
-                },
-              );
-            }),
+                }
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final role in ['customer', 'worker', 'admin'])
+                    RadioListTile<String>(
+                      title: Text(role.toUpperCase()),
+                      value: role,
+                    ),
+                ],
+              ),
+            ),
           ],
         ),
         actions: [
