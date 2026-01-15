@@ -429,9 +429,13 @@ class FirestoreService {
     required double amount,
     required String status,
     String? workerId, // Worker ID (if booking is for a specific worker)
+    String? paymentMethod, // Payment method (cod, jazzcash, easypaisa, card)
+    String? paymentStatus, // Payment status (pending, processing, completed, failed)
+    String? paymentId, // Payment ID reference
+    String? transactionId, // Transaction ID from payment gateway
   }) async {
     try {
-      final docRef = await _firestore.collection(_bookingsCollection).add({
+      final bookingData = {
         'customerId': userId, // Renamed from userId for clarity
         'workerId': workerId ?? '', // Worker ID (empty if not assigned yet)
         'serviceName': serviceName,
@@ -445,7 +449,23 @@ class FirestoreService {
         'status': status, // 'pending' | 'accepted' | 'rejected' | 'in_progress' | 'completed' | 'cancelled'
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
-      });
+      };
+
+      // Add payment fields if provided
+      if (paymentMethod != null) {
+        bookingData['paymentMethod'] = paymentMethod;
+      }
+      if (paymentStatus != null) {
+        bookingData['paymentStatus'] = paymentStatus;
+      }
+      if (paymentId != null) {
+        bookingData['paymentId'] = paymentId;
+      }
+      if (transactionId != null) {
+        bookingData['transactionId'] = transactionId;
+      }
+
+      final docRef = await _firestore.collection(_bookingsCollection).add(bookingData);
       
       // Send notification to worker if booking is for a specific worker
       if (workerId != null && workerId.isNotEmpty) {
